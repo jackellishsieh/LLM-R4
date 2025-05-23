@@ -16,7 +16,6 @@ import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM
 from trl.models.modeling_base import PreTrainedModelWrapper
 from trl.models.modeling_value_head import ValueHead
-from trl.import_utils import is_transformers_greater_than
 
 from importlib.util import find_spec
 def is_peft_available() -> bool:
