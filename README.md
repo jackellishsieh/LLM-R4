@@ -1,4 +1,24 @@
+# Custom Set-up Instructions
 
+1. Run `huggingface-cli dillonkn/qwen2.5-0.5b-reasoning-sft`, which downloads our SFT'd Qwen model to 
+`/home/ubuntu/.cache/huggingface/hub/models--dillonkn--qwen2.5-0.5b-reasoning-sft/snapshots/4b10ef8d143d5e4ae10bbb481a746dd8fa72beb2`
+
+2. Setup the right conda environment by running 
+```
+conda create -n R3 python=3.9 -y
+conda activate R3
+pip install -r requirements.txt
+```
+
+3. Log into wandb by running `wandb login` and pasting your wandb account API key.
+
+4. Run `mkdir output_models` and `mkdir log_dir`
+
+5. To train our SFT'd Qwen model on THEIR GMS8K dataset, run
+```
+cd R3_math
+bash R3_cot_gsm8k.sh
+```
 
 <h1 align="left"><strong>R</strong><sup>3</sup>: Training Large Language Models for <strong>R</strong>easoning through <strong>R</strong>everse Curriculum <strong>R</strong>einforcement Learning</h1>
 
