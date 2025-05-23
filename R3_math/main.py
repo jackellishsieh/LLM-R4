@@ -14,16 +14,29 @@ from src.python_stdout_engine import run_python_stdout_code, compare_both_string
 from src.utils import set_seed, is_numeric, timeout, discount_cumsum, do_gather
 from tqdm import tqdm
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import deepspeed
 from transformers import AutoTokenizer, AutoModelForCausalLM, get_linear_schedule_with_warmup, get_constant_schedule_with_warmup
 from trl import AutoModelForCausalLMWithValueHead
-from trl.core import masked_mean, masked_var, masked_whiten, logprobs_from_logits
+from trl.core import masked_mean, masked_var, masked_whiten
 from src.modeling_rl import AutoModelForCausalLMWithValueModel
 import numpy as np
 import wandb
 import shutil
 from prettytable import PrettyTable
+
+def logprobs_from_logits(logits: torch.Tensor, labels: torch.Tensor, gather: bool = True) -> torch.Tensor:
+    """
+    Taken from https://github.com/huggingface/trl/blob/9410874787db47ce0864d8dc16d91a415c6f7406/trl/core.py
+    See: https://github.com/pytorch/pytorch/issues/563#issuecomment-330103591
+    """
+    logp = F.log_softmax(logits, dim=2)
+
+    if not gather:
+        return logp
+    logpy = torch.gather(logp, 2, labels.unsqueeze(2)).squeeze(-1)
+    return logpy
 
 tqdm = partial(tqdm, ncols=0, leave=False)
 TIMEOUT = 2
