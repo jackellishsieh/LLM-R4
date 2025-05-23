@@ -737,7 +737,7 @@ def main(args):
     #     import ipdb; ipdb.set_trace()
 
     if accelerator.is_main_process and args['wandb_log']:
-        wandb.init(project=args['wandb_project'], name=args['wandb_run_name'])
+        wandb.init(project=args['wandb_project'], entity=args['wandb_entity'], name=args['wandb_run_name'])
         wandb.config.update(args)
         
     if args.get('use_small_vocab',False) and args['engine'] == 'game24':
@@ -1048,6 +1048,7 @@ if __name__ == '__main__':
         # wandb stuff
         wandb_log: bool = field(default=False)
         wandb_project: str = field(default='tmp')
+        wandb_entity: str = field(default='default_entity_name')
         wandb_run_name: str = field(default='default_run_name')
         ###
         engine: str = field(default='nl')

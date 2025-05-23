@@ -49,6 +49,7 @@ evaluating_step_freq="-100"
 saving_step_freq="-100"
 
 wandb_log="True"
+wand_entity="cs224r_project_team"
 wandb_project="R3_qwen"
 wandb_run_name="${exp_name}"
 #########
@@ -96,6 +97,7 @@ $python_path \
         --max_gen_length "${max_gen_length}" \
         --wandb_log "${wandb_log}" \
         --wandb_project "${wandb_project}" \
+        --wandb_entity "${wandb_entity}" \
         --wandb_run_name "${wandb_run_name}" \
         --engine "${engine}" \
         --use_small_vocab "${use_small_vocab}" \
