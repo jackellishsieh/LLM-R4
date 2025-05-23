@@ -6,18 +6,18 @@ exp_name="gsm8k_cot_mix"
 train_file='../data/gsm8k_nl_mix_example.json'
 test_file='../data/gsm8k_test.json'
 engine='nl'
-model_name_or_path='/your_sft_model_path'
-ref_model_name_or_path='/your_sft_model_path/the_same_with_actor_model'
-tokenizer_name_or_path='/your_sft_model_path'
+model_name_or_path='/home/ubuntu/.cache/huggingface/hub/models--dillonkn--qwen2.5-0.5b-reasoning-sft/snapshots/4b10ef8d143d5e4ae10bbb481a746dd8fa72beb2'
+ref_model_name_or_path="$model_name_or_path"
+tokenizer_name_or_path="$model_name_or_path"
 n_epochs='10'
 kl_coef='0.05'
 python_path="../main.py"
 
 
 ### Default variables
-model_dir="/your_output_model_dir"
+model_dir="/home/ubuntu/LLM-R4/output_models"
 config_file="../default_config_deepspeed.yaml"
-log_dir="/your_log_dir"
+log_dir="/home/ubuntu/LLM-R4/log_dir"
 mkdir -p "${model_dir}"
 mkdir -p "${log_dir}"
 
@@ -49,11 +49,11 @@ evaluating_step_freq="-100"
 saving_step_freq="-100"
 
 wandb_log="True"
-wandb_project="R3_llama"
+wandb_project="R3_qwen"
 wandb_run_name="${exp_name}"
 #########
 
-num_processes='8'
+num_processes='1'
 main_process_port='8888'
 
 echo ${model_dir}
