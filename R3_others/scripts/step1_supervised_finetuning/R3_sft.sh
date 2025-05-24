@@ -5,17 +5,23 @@
 
 # SFT script
 # zero_stage can be 2 or 3
+ZERO_STAGE=2
+
 # for math datasets, train_epochs=2
 # for other datasets, train_epochs=5
-ZERO_STAGE=2
-learning_rate=2e-5
-num_train_epochs=3
+num_train_epochs=2
 
-model_name_or_path="/your_path_to_llama-2-7b-hf"
+learning_rate=1e-4
+# they used a model with 7B parameters and hidden size 4096 and a SFT learning rate of 2e-5
+# we will use a model with 0.5B parameters and hidden size 896, so we set the learning rate to 1e-4
+
+
+model_name_or_path="/home/ubuntu/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775"
 data_path="../../data/gsm8k_cot/gsm8k_nl_train_example.json"
-output_base="/your_output_model_dir"
+output_base="/home/ubuntu/LLM-R4/output_models"
 output_dir=${output_base}lr${learning_rate}_ep${num_train_epochs}/
-data_output_path="/your_output_data_dir_to_save_shuffle_index"
+
+data_output_path="/home/ubuntu/LLM-R4/output_models"
 
 mkdir -p $output_dir
 
@@ -27,7 +33,7 @@ mkdir -p $output_dir
 # and we keep total_batch_size=256
 deepspeed \
     --master_port 39000 \
-    --num_gpus 8 \
+    --num_gpus 1 \
     main.py \
     --model_name_or_path $model_name_or_path\
     --data_path $data_path \
@@ -44,4 +50,4 @@ deepspeed \
     --num_train_epochs ${num_train_epochs} \
     --deepspeed \
     --output_dir  ${output_dir} \
-    > step1_llama_base_7b_gsm8k_cot.log 2>&1
+    > sft_gsm8k_cot.log 2>&1
