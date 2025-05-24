@@ -435,18 +435,6 @@ def main():
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
-    perplexity, eval_loss = evaluation(model, eval_dataloader, device)
-    # Log
-    print_rank_0(f"eval ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
-    if args.wandb_log:
-        wandb.log(
-            {
-                "eval/loss": eval_loss,
-                "eval/perplexity": perplexity,
-                "eval/epoch": 0,
-            }
-        )
-
     for epoch in range(args.num_train_epochs):
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
