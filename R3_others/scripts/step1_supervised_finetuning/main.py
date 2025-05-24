@@ -320,7 +320,7 @@ def main():
         deepspeed.init_distributed()
 
     # Initialize wandb if enabled
-    if get_accelerator().is_main_process and args["wandb_log"]:
+    if args.wandb_log:
         wandb.init(
             project=args["wandb_project"],
             entity=args["wandb_entity"],
