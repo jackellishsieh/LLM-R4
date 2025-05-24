@@ -5,17 +5,28 @@
 
 # SFT script
 # zero_stage can be 2 or 3
+# This is unnecessary for 1 device
+ZERO_STAGE=2
+
 # for math datasets, train_epochs=2
 # for other datasets, train_epochs=5
-ZERO_STAGE=2
-learning_rate=2e-5
-num_train_epochs=3
+num_train_epochs=2
 
-model_name_or_path="/your_path_to_llama-2-7b-hf"
+# they use a model with 7B parameters and hidden size 4096 + learning rate 2e-5
+# we use a model with 0.5B parameters and hidden size 896 + learning rate 1e-4
+learning_rate=1e-4
+
+model_name_or_path="/Qwen/Qwen2-0.5B-Instruct"
 data_path="../../data/gsm8k_cot/gsm8k_nl_train_example.json"
-output_base="/your_output_model_dir"
+output_base="/output_models"
 output_dir=${output_base}lr${learning_rate}_ep${num_train_epochs}/
-data_output_path="/your_output_data_dir_to_save_shuffle_index"
+data_output_path=${output_base}
+
+# wandb information
+wandb_log="True"
+wand_entity="cs224r_project_team"
+wandb_project="R3_qwen"
+wandb_run_name="sft_gsm8k_cot"
 
 mkdir -p $output_dir
 
@@ -27,8 +38,8 @@ mkdir -p $output_dir
 # and we keep total_batch_size=256
 deepspeed \
     --master_port 39000 \
-    --num_gpus 8 \
-    main.py \
+    --num_gpus 1 \
+main.py \
     --model_name_or_path $model_name_or_path\
     --data_path $data_path \
     --data_split "10,0,0" \
@@ -43,5 +54,9 @@ deepspeed \
     --print_loss  \
     --num_train_epochs ${num_train_epochs} \
     --deepspeed \
-    --output_dir  ${output_dir} \
-    > step1_llama_base_7b_gsm8k_cot.log 2>&1
+    --output_dir ${output_dir} \
+    --wandb_log "${wandb_log}" \
+    --wandb_project "${wandb_project}" \
+    --wandb_entity "${wandb_entity}" \
+    --wandb_run_name "${wandb_run_name}" \
+    > sft_gsm8k_cot.log 2>&1
