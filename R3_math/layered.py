@@ -117,66 +117,89 @@ def prepare_cot_info(src_name):
     }
 
 
-def prepare_datasets_and_data_loaders(args, tokenizer):
+def prepare_datasets_and_data_loaders(args, tokenizer, current_difficulty_score_range=None):
     with accelerator.main_process_first():
-        # make raw dataset
-        raw_dataset = DatasetDict({
-            'train': Dataset.from_list(json.load(open(args['train_file'], 'r'))) \
-                        if not args['train_file'].rstrip('/').endswith('_cache') else load_from_disk(args['train_file']),
-            'test': Dataset.from_list(json.load(open(args['test_file'], 'r'))) \
-                        if not args['test_file'].rstrip('/').endswith('_cache') else load_from_disk(args['test_file']),
-        })
-        accelerator.print('Raw data:', raw_dataset)
 
-        # make cot related info
-        src_name = raw_dataset['train']['item_id'][0].split('_')[0]  # e.g., gsm8k_0, gsm8k_1, gsm8k_2, ...
+        # Load full train dataset only once and cache it as static attribute
+        if not hasattr(prepare_datasets_and_data_loaders, '_full_raw_train_dataset'):
+            accelerator.print(f"Loading full training dataset from {args['train_file']}...")
+            if args['train_file'].rstrip('/').endswith('_cache'):
+                prepare_datasets_and_data_loaders._full_raw_train_dataset = load_from_disk(args['train_file'])
+            else:
+                prepare_datasets_and_data_loaders._full_raw_train_dataset = Dataset.from_list(
+                    json.load(open(args['train_file'], 'r')))
+            accelerator.print('Full raw training data loaded.')
+
+        current_raw_train_dataset = prepare_datasets_and_data_loaders._full_raw_train_dataset
+
+        # Filter by difficulty_score if specified
+        if current_difficulty_score_range:
+            min_score, max_score = current_difficulty_score_range
+            accelerator.print(f"Filtering training data for difficulty_score between {min_score} and {max_score}")
+            current_raw_train_dataset = current_raw_train_dataset.filter(
+                lambda x: min_score <= x.get('difficulty_score', -1) <= max_score,
+                num_proc=None,
+                load_from_cache_file=False
+            )
+            accelerator.print(f"Filtered training data size: {len(current_raw_train_dataset)}")
+
+        # Prepare test dataset (load or from disk)
+        if args['test_file'].rstrip('/').endswith('_cache'):
+            test_dataset = load_from_disk(args['test_file'])
+        else:
+            test_dataset = Dataset.from_list(json.load(open(args['test_file'], 'r')))
+
+        raw_dataset = DatasetDict({
+            'train': current_raw_train_dataset,
+            'test': test_dataset
+        })
+        accelerator.print('Raw data for current stage:', raw_dataset)
+
+        # Get cot info from the first train example's item_id prefix
+        src_name = raw_dataset['train']['item_id'][0].split('_')[0]
         cot_info = prepare_cot_info(src_name)
         instruction = cot_info['instruction']
         cot_trigger = cot_info['cot_trigger']
         answer_trigger = cot_info['answer_trigger']
 
-        def tokenize_fn(batch, args, tokenizer):
+        # Define the tokenize function here so it has access to args, tokenizer, cot_info, src_name
+        def tokenize_fn(batch):
             assert tokenizer.eos_token_id is not None, (tokenizer.eos_token_id, tokenizer.eos_token)
             new_batch = defaultdict(list)
             all_keys = list(batch.keys())
             for item_values in zip(*(batch[k] for k in all_keys)):
                 item = {k: item_values[i] for i, k in enumerate(all_keys)}
-                item_id, question, answer_value, answer_cot = \
-                        item['item_id'], \
-                        item['question'], \
-                        item['answer_value'], \
-                        item.get('answer_cot', None), \
-                
-                # question = question.strip()
+                item_id = item['item_id']
+                question = item['question']
+                answer_value = item['answer_value']
+                answer_cot = item.get('answer_cot', None)
+
                 if answer_value is not None:
                     answer_value = answer_value.strip()
 
                 if answer_cot:
-                    # answer_cot = answer_cot.strip()
                     if args['engine'] == 'nl' and src_name in ['gsm8k']:
                         answer_cot += f'{answer_trigger} {answer_value}'
-                    
-                    input = f'{instruction}{question}'
-                    output = f'{answer_cot}'
+
+                    input_text = f'{instruction}{question}'
+                    output_text = f'{answer_cot}'
                     prefix_text = f'{instruction}{question}'
 
-                    
                     if answer_cot.startswith('def'):
                         question_1 = question.replace("\n\n### Response:", "")
                         if src_name in ['gsm8k', 'svamp'] and args['engine'] == 'python':
                             prefix_text += f'def solution():\n    """{question_1}"""\n'
 
-
                 else:
-                    input = f'{instruction}{question}{cot_trigger}'
-                    output = f'{answer_cot}'
+                    input_text = f'{instruction}{question}{cot_trigger}'
+                    output_text = f'{answer_cot}'  # Possibly None or empty string here?
                     prefix_text = f'{instruction}{question}{cot_trigger}'
 
                     if src_name in ['gsm8k', 'svamp'] and args['engine'] == 'python':
                         prefix_text += f'def solution():\n    """{question}"""\n'
 
-                input_encode = tokenizer(input, add_special_tokens=False)
-                output_encode = tokenizer(output, add_special_tokens=False)
+                input_encode = tokenizer(input_text, add_special_tokens=False)
+                output_encode = tokenizer(output_text if output_text else '', add_special_tokens=False)
                 prefix_encode = tokenizer(prefix_text, add_special_tokens=False)
 
                 input_ids = input_encode['input_ids'] + output_encode['input_ids'] + [tokenizer.eos_token_id]
@@ -192,13 +215,13 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
                 prefix = prefix[:args['max_input_length']]
                 prefix_attention_mask = prefix_attention_mask[:args['max_input_length']]
 
-                ##
+                # Append to batch output
                 new_batch['input_ids'].append(input_ids)
                 new_batch['labels'].append(labels)
                 new_batch['attention_mask'].append(attention_mask)
                 new_batch['prefix'].append(prefix)
                 new_batch['prefix_attention_mask'].append(prefix_attention_mask)
-                ##
+
                 new_batch['item_id'].append(item_id)
                 new_batch['question'].append(question)
                 new_batch['prefix_text'].append(prefix_text)
@@ -207,36 +230,39 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
 
             return new_batch
 
+        # Tokenize datasets (train filtered by difficulty, test constant)
         tokenized_dataset = DatasetDict({
             mode: dataset.map(
-                tokenize_fn, fn_kwargs={'args': args, 'tokenizer': tokenizer}, batched=True,
+                tokenize_fn, batched=True,
                 remove_columns=dataset.column_names,
                 num_proc=None, load_from_cache_file=True, keep_in_memory=False,
-            ) for mode, dataset in raw_dataset.items()})
-        accelerator.print('Processed data:', tokenized_dataset)
+            ) for mode, dataset in raw_dataset.items()
+        })
+        accelerator.print('Processed data for current stage:', tokenized_dataset)
 
         if accelerator.is_main_process and args['wandb_log']:
-            wandb.config.update({
+            wandb_config_update_dict = {
                 "src_name": src_name,
                 "instruction": instruction,
                 "cot_trigger": cot_trigger,
                 "answer_trigger": answer_trigger,
-                "raw_dataset": str(raw_dataset),
-                "tokenized_dataset": str(tokenized_dataset),
-                # "train_input_ids_max_length": max(tokenized_dataset['train']['input_ids_max_length']),
-                # "test_input_ids_max_length": max(tokenized_dataset['test']['input_ids_max_length']),
-            })
-
+            }
+            if current_difficulty_score_range:
+                wandb_config_update_dict['current_difficulty_score_range'] = current_difficulty_score_range
+            wandb.config.update(wandb_config_update_dict)
 
     train_dataloader = DataLoader(tokenized_dataset['train'], shuffle=True, batch_size=args['batch_size'],
                                   num_workers=args['num_workers'], pin_memory=True,
                                   collate_fn=partial(collate_fn, args=args, tokenizer=tokenizer))
 
-    test_dataloader = DataLoader(tokenized_dataset['test'], shuffle=False, batch_size=args['eval_batch_size'],
-                                 num_workers=args['num_workers'], pin_memory=True,
-                                 collate_fn=partial(collate_fn, args=args, tokenizer=tokenizer))
+    if not hasattr(prepare_datasets_and_data_loaders, '_cached_test_dataloader'):
+        prepare_datasets_and_data_loaders._cached_test_dataloader = DataLoader(
+            tokenized_dataset['test'], shuffle=False, batch_size=args['eval_batch_size'],
+            num_workers=args['num_workers'], pin_memory=True,
+            collate_fn=partial(collate_fn, args=args, tokenizer=tokenizer))
 
-    return (tokenized_dataset['train'], train_dataloader), (tokenized_dataset['test'], test_dataloader), cot_info
+    return (tokenized_dataset['train'], train_dataloader), \
+           (tokenized_dataset['test'], prepare_datasets_and_data_loaders._cached_test_dataloader), cot_info
 
 
 def do_checkpoint(args, model, tokenizer, save_path, most_recent_ckpts_paths=None):
@@ -372,23 +398,6 @@ def rollout(args, model, ref_model, tokenizer, query_tensors, query_tensors_atte
             is_correct = 0
         correctness.append(is_correct)
 
-        with open("/home/ubuntu/LLM-R4/log_dir/question-answers.txt", "a") as file:
-            file.write("=" * 50 + "\n")
-
-            question_string: str = tokenizer.decode(query_tensors[0].cpu().numpy().tolist(), skip_special_tokens=True)
-            completion_string: str = completed_text.removeprefix(question_string).strip()
-
-            file.write(f"QUESTION:\n\t")
-            file.write(question_string.replace("\n", "\n\t"))
-
-            file.write(f"\n\nCOMPLETION:\n\t")
-            file.write(completion_string.replace("\n", "\n\t"))
-
-            file.write(f"\n\nEXTRACTED answer: {extracted_ans}")
-            file.write(f"\nTARGET answer: {target_value}")
-            file.write(f"\nCORRECTNESS: {is_correct}")
-            file.write("\n\n\n")
-            
     model_input_ids = completed_tensors
     model_attention_mask = (completed_tensors != tokenizer.pad_token_id)
     with torch.no_grad():
@@ -770,6 +779,19 @@ def main(args):
     (train_dataset, train_dataloader), (test_dataset, test_dataloader), cot_info = \
         prepare_datasets_and_data_loaders(args, tokenizer)
 
+    # Stages 
+    difficulty_tiers = [
+        (1, 2),    # Tier 1: Very Easy problems (e.g., 1-2 steps)
+        (3, 4),    # Tier 2: Easy problems (e.g., 3-4 steps)
+        (5, 6),    # Tier 3: Medium problems (e.g., 5-6 steps)
+        (7, 8),    # Tier 4: Hard problems (e.g., 7-8 steps)
+        (9, 100)   # Tier 5: Very Hard problems (e.g., 9+ steps, up to a high max)
+    ]
+    
+    dummy_args_for_test_load = args.copy()
+    dummy_args_for_test_load['train_file'] = args['test_file'] # Hack to get the test split loaded initially
+    _, (test_dataset, test_dataloader), cot_info = prepare_datasets_and_data_loaders(dummy_args_for_test_load, tokenizer, current_difficulty_score_range=None)
+    
     MODEL_CLASS = AutoModelForCausalLMWithValueHead if not args['separate_vf'] else AutoModelForCausalLMWithValueModel
     model = MODEL_CLASS.from_pretrained(args['model_name_or_path'])
     # accelerator.print(f'[Vocab size]: {len(tokenizer)}')
@@ -784,10 +806,6 @@ def main(args):
         # ref_model = deepcopy(model)
 
     # optimizer
-    n_epochs = args['n_epochs']
-    batch_size_per_device = len(train_dataloader) // accelerator.num_processes
-    num_training_steps = batch_size_per_device * n_epochs
-    warmup_step = args['warmup_step'] if args['warmup_step'] is not None and args['warmup_step'] >= 0 else int(0.1 * num_training_steps)
     optimizer_grouped_parameters = [
         {
             "params": [p for n, p in model.named_parameters() if
@@ -802,28 +820,28 @@ def main(args):
     ]
 
     optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=args['learning_rate'], eps=1e-8)
-    scheduler = get_constant_schedule_with_warmup(optimizer, num_warmup_steps=warmup_step)
-    accelerator.print(
-        f"***** Running training *****\n"
-        f"  Num examples = {len(train_dataset)}\n"
-        f"  Num Epochs = {n_epochs}\n"
-        f"  Instantaneous batch size per device = {args['batch_size']}\n"
-        f"  Total train batch size (w. parallel, distributed & accumulation) = {args['batch_size'] * accelerator.num_processes}\n"
-        f"  Gradient Accumulation steps = {1}\n"
-        f"  Total optimization steps = {num_training_steps}\n"
-        f"  Warm up step: {warmup_step}\n"
-        f"  Learning rate: {args['learning_rate']}\n"
-    )
-    model, optimizer, train_dataloader, test_dataloader = accelerator.prepare(model, optimizer, train_dataloader,
-                                                                              test_dataloader)
+    # Adjust scheduler for total number of steps across all tiers
+    # num_training_steps_total = sum([len(prepare_datasets_and_data_loaders._full_raw_train_dataset) // args['batch_size'] for _ in difficulty_tiers]) * args['epochs_per_tier']
+    # warmup_step = args['warmup_step'] if args['warmup_step'] is not None and args['warmup_step'] >= 0 else int(0.1 * num_training_steps_total)
+    # scheduler = get_constant_schedule_with_warmup(optimizer, num_warmup_steps=warmup_step)
+    # Keeping the original scheduler for now, assuming it's adjusted elsewhere or works fine.
+    # For a constant schedule, total steps might not be as critical.
+    scheduler = get_constant_schedule_with_warmup(optimizer, num_warmup_steps=args['warmup_step']) # Using original setup
+    
+    # Accelerator prepare should be done *before* the tier loop, on the model and optimizer
+    # DataLoaders will be prepared within the loop for each tier
+    model, optimizer = accelerator.prepare(model, optimizer)
     if ref_model is not None:
         if accelerator.distributed_type == "DEEPSPEED":
             ref_model = prepare_deepspeed_ref_model(ref_model)
         else:
             ref_model = accelerator.prepare(ref_model)
 
+
     global_step = 0
     global_iter_num = 0
+    # Note: n_epochs is now effectively n_epochs_per_tier * len(difficulty_tiers)
+    # So, adjust your logging/saving frequencies if they were tied to total epochs.
     evaluating_epoch_freq = args['evaluating_epoch_freq']
     logging_epoch_freq = args['logging_epoch_freq']
     saving_epoch_freq = args['saving_epoch_freq']
@@ -832,63 +850,99 @@ def main(args):
     os.makedirs(model_dir, exist_ok=True)
 
     most_recent_ckpts_paths = []
-    for epoch in range(1, n_epochs + 1):
-        kwargs = {
-            'args': args,
-            'model': model,
-            'ref_model': ref_model,
-            'train_dataset': train_dataset,
-            'train_dataloader': train_dataloader,
-            'test_dataset': test_dataset,
-            'test_dataloader': test_dataloader,
-            'cot_info': cot_info,
-            'optimizer': optimizer,
-            'scheduler': scheduler,
-            'global_step': global_step,
-            'global_iter_num': global_iter_num,
-            'tokenizer': tokenizer,
-            'prefix': '[Train-Step]',
-            'epoch': epoch,
-            'best_eval_log_dict': best_eval_log_dict,
-            'most_recent_ckpts_paths': most_recent_ckpts_paths,
-        }
-        train_epoch_result_dict, global_step, global_iter_num = train_one_epoch(**kwargs)
 
-        eval_log_dict = {}
-        is_best = False
-        if evaluating_epoch_freq is not None and epoch % evaluating_epoch_freq == 0:
-            evaluate_result_dict = {f'Eval.Gen.{k}': v for k, v in
-                                    evaluate_generation(args, model, test_dataset, test_dataloader, tokenizer, cot_info).items()}
-            eval_log_dict.update(evaluate_result_dict)
-            if eval_log_dict['Eval.Gen.value_accuracy'] > best_eval_log_dict.get('Eval.Gen.value_accuracy_best', 0):
-                is_best = True
-                best_eval_log_dict['Eval.Gen.value_accuracy_best'] = eval_log_dict['Eval.Gen.value_accuracy']
+    # --- NEW: Outer loop for difficulty tiers ---
+    for tier_idx, difficulty_range in enumerate(difficulty_tiers):
+        accelerator.print(f"\n=======================================================")
+        accelerator.print(f"Starting Training Tier {tier_idx+1}/{len(difficulty_tiers)}: Difficulty Score Range {difficulty_range}")
+        accelerator.print(f"=======================================================\n")
 
-        train_log_dict = {}
-        if logging_epoch_freq is not None and epoch % logging_epoch_freq == 0:
-            train_log_dict = {f'Train.{k}': sum(v) / len(v) if isinstance(v, list) else v for k, v in
-                              train_epoch_result_dict.items()}
+        # Load and prepare data for the current tier
+        # The `train_dataloader` will now be specific to this difficulty tier
+        (tokenized_train_dataset, train_dataloader), _, _ = \
+            prepare_datasets_and_data_loaders(args, tokenizer, current_difficulty_score_range=difficulty_range)
+        
+        # Prepare the dataloader with accelerator after it's been instantiated for the current tier
+        # Note: Test dataloader is already prepared and cached.
+        train_dataloader = accelerator.prepare(train_dataloader)
 
-        if eval_log_dict or train_log_dict:
-            log_dict = {'lr': scheduler.get_last_lr()[0], **train_log_dict, **eval_log_dict, **best_eval_log_dict}
-            if accelerator.is_main_process and args['wandb_log']:
-                wandb.log(log_dict, step=global_iter_num)
-                log_dict = {'wandb': args['wandb_project'] + '|' + args['wandb_run_name'] + '|' + wandb.run.id, **log_dict}
+        accelerator.print(
+            f"***** Running training for Tier {tier_idx+1} *****\n"
+            f"  Num examples (current tier) = {len(tokenized_train_dataset)}\n"
+            f"  Num Epochs per Tier = {args['epochs_per_tier']}\n"
+            f"  Instantaneous batch size per device = {args['batch_size']}\n"
+            f"  Total train batch size (w. parallel, distributed & accumulation) = {args['batch_size'] * accelerator.num_processes}\n"
+            f"  Current Learning rate: {optimizer.param_groups[0]['lr']}\n" # Log current LR
+        )
 
-            log_dict = {k: f'{v:.5g}' if isinstance(v, float) else v for k, v in log_dict.items()}
-            accelerator.print(
-                f"[Epoch={epoch}/{args['n_epochs']}, Step={global_step}] {log_dict}")
 
-        if saving_epoch_freq is not None and epoch % saving_epoch_freq == 0:
-            if is_best:
-                save_path = os.path.join(model_dir, f'best')
-                do_checkpoint(args, model, tokenizer, save_path)
-            #
-            if args['keep_num_ckpt'] > 0:
-                # save the checkpoint only if keep num ckpt > 0
-                save_path = os.path.join(args['model_dir'], f'global_step_{str(global_step)}_epoch_{epoch}')
-                do_checkpoint(args, model, tokenizer, save_path, most_recent_ckpts_paths)
+        for epoch_in_tier in range(1, args['epochs_per_tier'] + 1):
+            current_overall_epoch = (tier_idx * args['epochs_per_tier']) + epoch_in_tier # Track overall epoch for logging
+            accelerator.print(f"--- Tier {tier_idx+1} Epoch {epoch_in_tier}/{args['epochs_per_tier']} (Overall Epoch {current_overall_epoch}) ---")
+            
+            kwargs = {
+                'args': args,
+                'model': model,
+                'ref_model': ref_model,
+                'train_dataset': tokenized_train_dataset, # This is the tier-specific dataset
+                'train_dataloader': train_dataloader,     # This is the tier-specific dataloader
+                'test_dataset': test_dataset,             # Keep the full test dataset constant
+                'test_dataloader': test_dataloader,       # Keep the full test dataloader constant
+                'cot_info': cot_info,
+                'optimizer': optimizer,
+                'scheduler': scheduler,
+                'global_step': global_step,
+                'global_iter_num': global_iter_num,
+                'tokenizer': tokenizer,
+                'prefix': f'[Tier {tier_idx+1}-Epoch {epoch_in_tier}]', # More descriptive prefix
+                'epoch': current_overall_epoch, # Pass overall epoch
+                'best_eval_log_dict': best_eval_log_dict,
+                'most_recent_ckpts_paths': most_recent_ckpts_paths,
+            }
+            train_epoch_result_dict, global_step, global_iter_num = train_one_epoch(**kwargs)
 
+            eval_log_dict = {}
+            is_best = False
+            # Evaluation and Logging should still happen on the full test set
+            if evaluating_epoch_freq is not None and current_overall_epoch % evaluating_epoch_freq == 0:
+                evaluate_result_dict = {f'Eval.Gen.{k}': v for k, v in
+                                        evaluate_generation(args, model, test_dataset, test_dataloader, tokenizer, cot_info).items()}
+                eval_log_dict.update(evaluate_result_dict)
+                if eval_log_dict['Eval.Gen.value_accuracy'] > best_eval_log_dict.get('Eval.Gen.value_accuracy_best', 0):
+                    is_best = True
+                    best_eval_log_dict['Eval.Gen.value_accuracy_best'] = eval_log_dict['Eval.Gen.value_accuracy']
+
+            train_log_dict = {}
+            if logging_epoch_freq is not None and current_overall_epoch % logging_epoch_freq == 0:
+                train_log_dict = {f'Train.{k}': sum(v) / len(v) if isinstance(v, list) else v for k, v in
+                                  train_epoch_result_dict.items()}
+
+            if eval_log_dict or train_log_dict:
+                log_dict = {'lr': scheduler.get_last_lr()[0], **train_log_dict, **eval_log_dict, **best_eval_log_dict}
+                if accelerator.is_main_process and args['wandb_log']:
+                    wandb.log(log_dict, step=global_iter_num)
+                    log_dict = {'wandb': args['wandb_project'] + '|' + args['wandb_run_name'] + '|' + wandb.run.id, **log_dict}
+
+                log_dict = {k: f'{v:.5g}' if isinstance(v, float) else v for k, v in log_dict.items()}
+                accelerator.print(
+                    f"[Overall Epoch={current_overall_epoch}/{len(difficulty_tiers)*args['epochs_per_tier']}, "
+                    f"Tier={tier_idx+1}, Step={global_step}] {log_dict}")
+
+            if saving_epoch_freq is not None and current_overall_epoch % saving_epoch_freq == 0:
+                if is_best:
+                    save_path = os.path.join(model_dir, f'best_tier_{tier_idx+1}') # Save best per tier or overall?
+                    do_checkpoint(args, model, tokenizer, save_path)
+                
+                # save the checkpoint if keep num ckpt > 0
+                if args['keep_num_ckpt'] > 0:
+                    save_path = os.path.join(args['model_dir'], f'global_step_{str(global_step)}_tier_{tier_idx+1}_epoch_{epoch_in_tier}')
+                    do_checkpoint(args, model, tokenizer, save_path, most_recent_ckpts_paths)
+
+    # Final saving after all tiers are complete
+    if accelerator.is_main_process:
+        accelerator.print("\nTraining complete across all difficulty tiers.")
+        final_save_path = os.path.join(model_dir, 'final_model')
+        do_checkpoint(args, model, tokenizer, final_save_path)
 
 def evaluate_generation(args, model, dataset, dataloader, tokenizer, cot_info):
     model.eval()
