@@ -309,10 +309,7 @@ def evaluation(model, eval_dataloader, device):
 def main():
     args = parse_args()
 
-    if args['wandb_log']:
-        wandb.init(project=args['wandb_project'], entity=args['wandb_entity'], name=args['wandb_run_name'])
-        wandb.config.update(args)
-
+    print("Local rank = ", args.local_rank)
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
@@ -321,6 +318,15 @@ def main():
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
+
+    # Initialize wandb if enabled
+    if get_accelerator().is_main_process and args["wandb_log"]:
+        wandb.init(
+            project=args["wandb_project"],
+            entity=args["wandb_entity"],
+            name=args["wandb_run_name"],
+        )
+        wandb.config.update(args)
 
     args.global_rank = torch.distributed.get_rank()
 
@@ -397,7 +403,6 @@ def main():
     print("train length:{}".format(len(train_dataset)))
 
     # Create the dataloaders
-    print("Local rank = ", args.local_rank)
     if args.local_rank == -1:
         train_sampler = RandomSampler(train_dataset)
         eval_sampler = SequentialSampler(eval_dataset)
@@ -495,7 +500,7 @@ def main():
                         "train/epoch": epoch + step / len(train_dataloader),
                         "train/lr": optimizer.param_groups[0]["lr"],
                     },
-                    step = step + epoch * len(train_dataloader),
+                    step=step + epoch * len(train_dataloader),
                 )
 
         # Evaluate on the validation set each epoch.
