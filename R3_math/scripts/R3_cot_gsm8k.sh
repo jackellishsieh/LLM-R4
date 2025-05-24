@@ -49,7 +49,7 @@ evaluating_step_freq="-100"
 saving_step_freq="-100"
 
 wandb_log="True"
-wand_entity="cs224r_project_team"
+wandb_entity="cs224r_project_team"
 wandb_project="R3_qwen"
 wandb_run_name="${exp_name}"
 #########

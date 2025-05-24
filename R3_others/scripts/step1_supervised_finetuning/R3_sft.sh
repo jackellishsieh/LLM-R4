@@ -16,15 +16,15 @@ num_train_epochs=2
 # we use a model with 0.5B parameters and hidden size 896 + learning rate 1e-4
 learning_rate=1e-4
 
-model_name_or_path="/Qwen/Qwen2-0.5B-Instruct"
+model_name_or_path="Qwen/Qwen2-0.5B-Instruct"
 data_path="../../data/gsm8k_cot/gsm8k_nl_train_example.json"
-output_base="/home/ubuntu/LLM-R4/output_models"
+output_base="/home/ubuntu/LLM-R4/output_models/sft_gsm8k_cot/"
 output_dir=${output_base}lr${learning_rate}_ep${num_train_epochs}/
 data_output_path=${output_base}
 
 # wandb information
 wandb_log="True"
-wand_entity="cs224r_project_team"
+wandb_entity="cs224r_project_team"
 wandb_project="R3_qwen"
 wandb_run_name="sft_gsm8k_cot"
 
@@ -59,4 +59,4 @@ main.py \
     --wandb_project "${wandb_project}" \
     --wandb_entity "${wandb_entity}" \
     --wandb_run_name "${wandb_run_name}" \
-    > sft_gsm8k_cot.log 2>&1
+    > /home/ubuntu/LLM-R4/log_dir/sft_gsm8k_cot.log 2>&1
