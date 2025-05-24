@@ -56,6 +56,9 @@ from dschat.utils.module.lora import (
 from dschat.utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
 from dschat.utils.perf import print_throughput
 
+from dschat.utils.data.data_utils import PromptDataset
+torch.serialization.add_safe_globals([PromptDataset])
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -309,8 +312,9 @@ def evaluation(model, eval_dataloader, device):
 def main():
     args = parse_args()
 
-    print("Local rank = ", args.local_rank)
-    if args.local_rank == -1:
+    print("DDP: ", torch.distributed.is_initialized())
+
+    if not torch.distributed.is_initialized():
         device = torch.device(get_accelerator().device_name())
     else:
         get_accelerator().set_device(args.local_rank)
@@ -319,16 +323,22 @@ def main():
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
 
+    print("Device = ", device)
+
     # Initialize wandb if enabled
     if args.wandb_log:
+        print("Project = ", args.wandb_project)
+        print("Entity = ", args.wandb_entity)
+        print("Run name = ", args.wandb_run_name)
+
         wandb.init(
-            project=args["wandb_project"],
-            entity=args["wandb_entity"],
-            name=args["wandb_run_name"],
+            project=args.wandb_project,
+            entity=args.wandb_entity,
+            name=args.wandb_run_name,
         )
         wandb.config.update(args)
 
-    args.global_rank = torch.distributed.get_rank()
+    args.global_rank = (torch.distributed.get_rank() if torch.distributed.is_initialized() else 0)
 
     ds_config = get_train_ds_config(
         offload=args.offload,
@@ -342,14 +352,15 @@ def main():
     ds_config["train_micro_batch_size_per_gpu"] = args.per_device_train_batch_size
     ds_config["train_batch_size"] = (
         args.per_device_train_batch_size
-        * torch.distributed.get_world_size()
+        * (torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1)
         * args.gradient_accumulation_steps
     )  # overall batch size, across gradient accumulation steps and devices
 
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
 
-    torch.distributed.barrier()
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
     args.end_of_conversation_token = "<|endoftext|>"
@@ -401,9 +412,10 @@ def main():
     )
 
     print("train length:{}".format(len(train_dataset)))
+    print("eval length:{}".format(len(eval_dataset)))
 
     # Create the dataloaders
-    if args.local_rank == -1:
+    if not torch.distributed.is_initialized():
         train_sampler = RandomSampler(train_dataset)
         eval_sampler = SequentialSampler(eval_dataset)
     else:
@@ -455,13 +467,17 @@ def main():
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
-    # Train!
-    # print_rank_0("***** Running training *****", args.global_rank)
-    # print_rank_0(
-    #     f"***** Evaluating perplexity, Epoch {0}/{args.num_train_epochs} *****",
-    #     args.global_rank)
-    # perplexity, eval_loss = evaluation(model, eval_dataloader)
-    # print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
+    perplexity, eval_loss = evaluation(model, eval_dataloader, device)
+    # Log
+    print_rank_0(f"eval ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
+    if args.wandb_log:
+        wandb.log(
+            {
+                "eval/loss": eval_loss,
+                "eval/perplexity": perplexity,
+                "eval/epoch": 0,
+            }
+        )
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -497,7 +513,7 @@ def main():
                 wandb.log(
                     {
                         "train/loss": loss.item(),
-                        "train/epoch": epoch + step / len(train_dataloader),
+                        "train/epoch": epoch + (step + 1) / len(train_dataloader),
                         "train/lr": optimizer.param_groups[0]["lr"],
                     },
                     step=step + epoch * len(train_dataloader),
@@ -508,10 +524,10 @@ def main():
             f"***** Evaluating perplexity, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank,
         )
-        perplexity, eval_loss = evaluation(model, eval_dataloader)
+        perplexity, eval_loss = evaluation(model, eval_dataloader, device)
 
         # Log
-        print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
+        print_rank_0(f"eval ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
         model.tput_timer.update_epoch_count()
         if args.wandb_log:
             wandb.log(
