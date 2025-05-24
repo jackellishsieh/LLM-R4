@@ -1,0 +1,170 @@
+[2025-05-24 04:07:09,956] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:49: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, input, weight, bias=None):
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:67: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+[2025-05-24 04:07:14,749] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.7
+[93m [WARNING] [0m using untested triton version (3.3.0), only 1.0.0 is known to be compatible
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:49: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, input, weight, bias=None):
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:67: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+[2025-05-24 04:07:18,459] [INFO] [comm.py:637:init_distributed] cdb=None
+[2025-05-24 04:07:18,459] [INFO] [comm.py:668:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+{'model_name_or_path': 'dillonkn/qwen2.5-0.5b-reasoning-sft', 'tokenizer_name_or_path': 'dillonkn/qwen2.5-0.5b-reasoning-sft', 'model_dir': '/home/ubuntu/LLM-R4/output_models', 'train_file': '../data/gsm8k_difficulty_train.json', 'test_file': '../data/gsm8k_original_test.json', 'batch_size': 4, 'mini_batch_size': 4, 'eval_batch_size': 8, 'ppo_epochs': 2, 'n_epochs': 10, 'num_workers': 0, 'learning_rate': 3e-07, 'weight_decay': 0.0, 'warmup_step': 0, 'clip_grad_norm': 1.0, 'vf_coef': 5.0, 'kl_coef': 0.05, 'gamma': 1.0, 'lam': 0.95, 'ref_model_name_or_path': 'dillonkn/qwen2.5-0.5b-reasoning-sft', 'evaluating_epoch_freq': 1, 'logging_epoch_freq': 1, 'saving_epoch_freq': 1, 'evaluating_step_freq': None, 'logging_step_freq': 1, 'logging_seq_str_step_freq': None, 'logging_values_step_freq': None, 'saving_step_freq': None, 'seed': 42, 'max_input_length': 700, 'max_gen_length': 700, 'keep_num_ckpt': 0, 'separate_vf': 0, 'init_value_model_with_rm': 0, 'init_value_head_with_rm': 0, 'rm_model_name_or_path': '/your_model_path_here', 'wandb_log': True, 'wandb_project': 'R3_qwen', 'wandb_entity': '', 'wandb_run_name': 'gsm8k_staged_rl', 'engine': 'nl', 'use_small_vocab': 0, 'adv_whitening': 'global'}
+{
+  "model_name_or_path": "dillonkn/qwen2.5-0.5b-reasoning-sft",
+  "tokenizer_name_or_path": "dillonkn/qwen2.5-0.5b-reasoning-sft",
+  "model_dir": "/home/ubuntu/LLM-R4/output_models",
+  "train_file": "../data/gsm8k_difficulty_train.json",
+  "test_file": "../data/gsm8k_original_test.json",
+  "batch_size": 4,
+  "mini_batch_size": 4,
+  "eval_batch_size": 8,
+  "ppo_epochs": 2,
+  "n_epochs": 10,
+  "num_workers": 0,
+  "learning_rate": 3e-07,
+  "weight_decay": 0.0,
+  "warmup_step": 0,
+  "clip_grad_norm": 1.0,
+  "vf_coef": 5.0,
+  "kl_coef": 0.05,
+  "gamma": 1.0,
+  "lam": 0.95,
+  "ref_model_name_or_path": "dillonkn/qwen2.5-0.5b-reasoning-sft",
+  "evaluating_epoch_freq": 1,
+  "logging_epoch_freq": 1,
+  "saving_epoch_freq": 1,
+  "evaluating_step_freq": null,
+  "logging_step_freq": 1,
+  "logging_seq_str_step_freq": null,
+  "logging_values_step_freq": null,
+  "saving_step_freq": null,
+  "seed": 42,
+  "max_input_length": 700,
+  "max_gen_length": 700,
+  "keep_num_ckpt": 0,
+  "separate_vf": 0,
+  "init_value_model_with_rm": 0,
+  "init_value_head_with_rm": 0,
+  "rm_model_name_or_path": "/your_model_path_here",
+  "wandb_log": true,
+  "wandb_project": "R3_qwen",
+  "wandb_entity": "",
+  "wandb_run_name": "gsm8k_staged_rl",
+  "engine": "nl",
+  "use_small_vocab": 0,
+  "adv_whitening": "global"
+}
+wandb: Currently logged in as: ez26 (cs224r_project_team) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.19.11
+wandb: Run data is saved locally in /home/ubuntu/LLM-R4/R3_math/scripts/wandb/run-20250524_040718-ogv9qssx
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run gsm8k_staged_rl
+wandb: ⭐️ View project at https://wandb.ai/cs224r_project_team/R3_qwen
+wandb: 🚀 View run at https://wandb.ai/cs224r_project_team/R3_qwen/runs/ogv9qssx
+Loading full training dataset from ../data/gsm8k_difficulty_train.json...
+Full raw training data loaded.
+Raw data for current stage: DatasetDict({
+    train: Dataset({
+        features: ['question', 'answer', 'item_id', 'difficulty_score'],
+        num_rows: 7473
+    })
+    test: Dataset({
+        features: ['question', 'answer', 'item_id'],
+        num_rows: 1319
+    })
+})
+Map:   0%|          | 0/7473 [00:00<?, ? examples/s]Map:   0%|          | 0/7473 [00:00<?, ? examples/s]
+Traceback (most recent call last):
+  File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 1138, in <module>
+    main(args)
+  File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 780, in main
+    prepare_datasets_and_data_loaders(args, tokenizer)
+  File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 234, in prepare_datasets_and_data_loaders
+    tokenized_dataset = DatasetDict({
+  File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 235, in <dictcomp>
+    mode: dataset.map(
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 557, in wrapper
+    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3079, in map
+    for rank, done, content in Dataset._map_single(**dataset_kwargs):
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3525, in _map_single
+    for i, batch in iter_outputs(shard_iterable):
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3475, in iter_outputs
+    yield i, apply_function(example, i, offset=offset)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3398, in apply_function
+    processed_inputs = function(*fn_args, *additional_args, **fn_kwargs)
+  File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 174, in tokenize_fn
+    answer_value = item['answer_value']
+KeyError: 'answer_value'
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 1138, in <module>
+[rank0]:     main(args)
+[rank0]:   File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 780, in main
+[rank0]:     prepare_datasets_and_data_loaders(args, tokenizer)
+[rank0]:   File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 234, in prepare_datasets_and_data_loaders
+[rank0]:     tokenized_dataset = DatasetDict({
+[rank0]:   File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 235, in <dictcomp>
+[rank0]:     mode: dataset.map(
+[rank0]:   File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 557, in wrapper
+[rank0]:     out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+[rank0]:   File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3079, in map
+[rank0]:     for rank, done, content in Dataset._map_single(**dataset_kwargs):
+[rank0]:   File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3525, in _map_single
+[rank0]:     for i, batch in iter_outputs(shard_iterable):
+[rank0]:   File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3475, in iter_outputs
+[rank0]:     yield i, apply_function(example, i, offset=offset)
+[rank0]:   File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/datasets/arrow_dataset.py", line 3398, in apply_function
+[rank0]:     processed_inputs = function(*fn_args, *additional_args, **fn_kwargs)
+[rank0]:   File "/home/ubuntu/LLM-R4/R3_math/scripts/../ppo.py", line 174, in tokenize_fn
+[rank0]:     answer_value = item['answer_value']
+[rank0]: KeyError: 'answer_value'
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mgsm8k_staged_rl[0m at: [34mhttps://wandb.ai/cs224r_project_team/R3_qwen/runs/ogv9qssx[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20250524_040718-ogv9qssx/logs[0m
+[rank0]:[W524 04:07:21.672288742 ProcessGroupNCCL.cpp:1476] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+E0524 04:07:22.487974 4192 site-packages/torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 0 (pid: 4235) of binary: /home/ubuntu/miniconda3/envs/R3_math/bin/python3.9
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.7
+[93m [WARNING] [0m using untested triton version (3.3.0), only 1.0.0 is known to be compatible
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/R3_math/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 48, in main
+    args.func(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/launch.py", line 1159, in launch_command
+    deepspeed_launcher(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/launch.py", line 852, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+../ppo.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-05-24_04:07:22
+  host      : ip-172-31-8-24.us-west-2.compute.internal
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 4235)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
