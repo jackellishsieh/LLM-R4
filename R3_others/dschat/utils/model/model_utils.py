@@ -10,8 +10,8 @@ from transformers import (
 )
 from transformers.integrations import HfDeepSpeedConfig
 
-from dschat.utils.model.reward_model import RewardModel
-from dschat.utils.utils import load_state_dict_into_model, print_rank_0
+from R3_others.dschat.utils.model.reward_model import RewardModel
+from R3_others.dschat.utils.utils import load_state_dict_into_model, print_rank_0
 
 
 def configure_dropout(model_config, dropout):
