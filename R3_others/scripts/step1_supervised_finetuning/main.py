@@ -377,18 +377,17 @@ def main():
         args.max_seq_len,
         sft_only_data_path=args.sft_only_data_path,
         reload=True,
-    )
+    )   # eval dataset not used for SFT
 
     print("train length:{}".format(len(train_dataset)))
-    print("eval length:{}".format(len(eval_dataset)))
 
     # Create the dataloaders
     if not torch.distributed.is_initialized():
         train_sampler = RandomSampler(train_dataset)
-        eval_sampler = SequentialSampler(eval_dataset)
+        # eval_sampler = SequentialSampler(eval_dataset)
     else:
         train_sampler = DistributedSampler(train_dataset)
-        eval_sampler = DistributedSampler(eval_dataset)
+        # eval_sampler = DistributedSampler(eval_dataset)
 
     train_dataloader = DataLoader(
         train_dataset,
@@ -396,12 +395,12 @@ def main():
         sampler=train_sampler,
         batch_size=args.per_device_train_batch_size,
     )
-    eval_dataloader = DataLoader(
-        eval_dataset,
-        collate_fn=customized_data_collator,
-        sampler=eval_sampler,
-        batch_size=args.per_device_eval_batch_size,
-    )
+    # eval_dataloader = DataLoader(
+    #     eval_dataset,
+    #     collate_fn=customized_data_collator,
+    #     sampler=eval_sampler,
+    #     batch_size=args.per_device_eval_batch_size,
+    # )
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
@@ -483,17 +482,17 @@ def main():
         # )
         # perplexity, eval_loss = evaluation(model, eval_dataloader)
 
-        # Log
-        print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
-        model.tput_timer.update_epoch_count()
-        if args.wandb_log:
-            wandb.log(
-                {
-                    "eval/loss": eval_loss,
-                    "eval/perplexity": perplexity,
-                    "eval/epoch": epoch,
-                }
-            )
+        # # Log
+        # print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
+        # model.tput_timer.update_epoch_count()
+        # if args.wandb_log:
+        #     wandb.log(
+        #         {
+        #             "eval/loss": eval_loss,
+        #             "eval/perplexity": perplexity,
+        #             "eval/epoch": epoch,
+        #         }
+        #     )
 
     if args.output_dir is not None:
         print_rank_0("saving the final model ...", args.global_rank)
