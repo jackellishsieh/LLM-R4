@@ -2,16 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-import os
-import math
 import torch
 from transformers import (
     AutoConfig,
     AutoModel,
     AutoModelForCausalLM
 )
-from huggingface_hub import snapshot_download
-from transformers.deepspeed import HfDeepSpeedConfig
+from transformers.integrations import HfDeepSpeedConfig
 
 from dschat.utils.model.reward_model import RewardModel
 from dschat.utils.utils import load_state_dict_into_model, print_rank_0
