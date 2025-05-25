@@ -14,7 +14,7 @@ num_train_epochs=2
 
 # they use a model with 7B parameters and hidden size 4096 + learning rate 2e-5
 # we use a model with 0.5B parameters and hidden size 896 + learning rate 1e-4
-learning_rate=1e-4
+learning_rate=5e-6
 
 model_name_or_path="Qwen/Qwen2-0.5B-Instruct"
 data_path="../../data/gsm8k_cot/gsm8k_nl_train_example.json"

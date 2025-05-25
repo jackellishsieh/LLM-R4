@@ -27,7 +27,6 @@ TIMEOUT = 2
 
 def prepare_eval_dataset(
     eval_file: str,
-    src_name: str,  # e.g., 'gsm8k', 'svamp'
     tokenizer,
     engine: str = "nl",
     max_input_length: int = 700,
@@ -144,7 +143,7 @@ def prepare_eval_dataset(
         batch_size=eval_batch_size,
         num_workers=num_workers,
         pin_memory=True,
-        collate_fn=partial(util.collate_fn, args=None, tokenizer=tokenizer),
+        collate_fn=partial(util.collate_fn, tokenizer=tokenizer),
     )
 
     return (tokenized_eval_dataset, eval_dataloader), cot_info
@@ -183,7 +182,7 @@ def evaluate_generation(
             eos_token_id=tokenizer.eos_token_id,
         )
         generated_ids = output_.sequences
-        generated_ids = pad_across_processes(
+        generated_ids = pad_processes(
             generated_ids, dim=1, pad_index=tokenizer.pad_token_id, pad_first=True
         )
 
@@ -286,9 +285,7 @@ def evaluate_generation(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Finetune a transformers model on a causal language modeling task"
-    )
+    parser = argparse.ArgumentParser(description="Evaluate a model on a json dataset.")
 
     parser.add_argument(
         "--model_name_or_path",
@@ -318,7 +315,14 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-eval_file", type=str, help="The input evaluation data file (a json file)."
+        "--local_rank",
+        type=int,
+        default=-1,
+        help="local_rank for distributed training on gpus",
+    )
+
+    parser.add_argument(
+        "--eval_file", type=str, help="The input evaluation data file (a json file)."
     )
 
     parser.add_argument(
@@ -340,6 +344,23 @@ def parse_args():
         type=str,
         default="nl",
         help="The engine to use for generation. Options: nl, python",
+    )
+
+    parser.add_argument(
+        "--add_eot_token",
+        action="store_true",
+        help="Add <|endoftext|> as additional special token to tokenizer",
+    )
+
+    parser.add_argument(
+        "--offload", action="store_true", help="Enable ZeRO Offload techniques."
+    )
+    parser.add_argument(
+        "--dtype",
+        type=str,
+        default="bf16",
+        choices=["fp16", "bf16"],
+        help="Training data type",
     )
 
     parser = deepspeed.add_config_arguments(parser)
@@ -382,9 +403,6 @@ def main():
         offload=args.offload,
         # gradient_clipping="auto",
         dtype=args.dtype,
-        stage=args.zero_stage,
-        enable_tensorboard=args.enable_tensorboard,
-        tb_path=args.tensorboard_path,
         tb_name="step1_model",
     )
     model = create_hf_model(
@@ -411,3 +429,7 @@ def main():
         engine=args.engine,
     )
     print(f"Final value_accuracy: {value_accuracy:.5g}%")
+
+
+if __name__ == "__main__":
+    main()
