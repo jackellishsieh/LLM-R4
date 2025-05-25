@@ -26,6 +26,8 @@ import wandb
 import shutil
 from prettytable import PrettyTable
 
+import util
+
 def logprobs_from_logits(logits: torch.Tensor, labels: torch.Tensor, gather: bool = True) -> torch.Tensor:
     """
     Taken from https://github.com/huggingface/trl/blob/9410874787db47ce0864d8dc16d91a415c6f7406/trl/core.py
@@ -75,47 +77,6 @@ def prepare_deepspeed_ref_model(model):
     return model
 
 
-def prepare_cot_info(src_name):
-    assert src_name in ['gsm8k', 'svamp']
-
-    # default for common datasets
-    instruction = 'Question:\n'
-    cot_trigger = '\nAnswer reasoning:\n'
-    answer_trigger = '\nTherefore, the answer is: '
-
-
-    if src_name in ['gsm8k', 'svamp']:
-        # over-write for the simple datasets
-        instruction = 'Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n'
-        cot_trigger = '\n\n### Response:'
-        answer_trigger = '\n####'
-
-
-    post_process_final_answer_fn_mapper = {
-        'gsm8k': lambda x: float(x.replace(',', '').strip()),
-        'svamp': lambda x: float(x.replace(',', '').strip()),
-    }
-    post_process_completed_question_answer_fn_mapper = {
-        ('python', 'gsm8k'): lambda completed_question_answer: float(run_python_code(code_gen=completed_question_answer.split(cot_trigger)[-1].strip())),
-        ('python', 'svamp'): lambda completed_question_answer: float(run_python_code(code_gen=completed_question_answer.split(cot_trigger)[-1].strip())),
-        
-        ('nl', 'gsm8k'): lambda completed_question_answer: float(completed_question_answer.split(cot_trigger)[-1].split(answer_trigger)[-1].strip()),
-        ('nl', 'svamp'): lambda completed_question_answer: float(completed_question_answer.split(cot_trigger)[-1].split(answer_trigger)[-1].strip()),
-    }
-    compare_answer_fn_mapper = {
-        'gsm8k': lambda extracted_ans, target_answer: abs(extracted_ans - target_answer) <= 1e-2,
-        'svamp': lambda extracted_ans, target_answer: abs(extracted_ans - target_answer) <= 1e-2,
-    }
-
-    return {
-        'instruction': instruction,
-        'cot_trigger': cot_trigger,
-        'answer_trigger': answer_trigger,
-        'post_process_final_answer_fn_mapper': post_process_final_answer_fn_mapper,
-        'post_process_completed_question_answer_fn_mapper': post_process_completed_question_answer_fn_mapper,
-        'compare_answer_fn_mapper': compare_answer_fn_mapper,
-    }
-
 
 def prepare_datasets_and_data_loaders(args, tokenizer):
     with accelerator.main_process_first():
@@ -130,7 +91,7 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
 
         # make cot related info
         src_name = raw_dataset['train']['item_id'][0].split('_')[0]  # e.g., gsm8k_0, gsm8k_1, gsm8k_2, ...
-        cot_info = prepare_cot_info(src_name)
+        cot_info = util.prepare_cot_info(src_name)
         instruction = cot_info['instruction']
         cot_trigger = cot_info['cot_trigger']
         answer_trigger = cot_info['answer_trigger']
@@ -230,11 +191,11 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
 
     train_dataloader = DataLoader(tokenized_dataset['train'], shuffle=True, batch_size=args['batch_size'],
                                   num_workers=args['num_workers'], pin_memory=True,
-                                  collate_fn=partial(collate_fn, args=args, tokenizer=tokenizer))
+                                  collate_fn=partial(util.collate_fn, tokenizer=tokenizer))
 
     test_dataloader = DataLoader(tokenized_dataset['test'], shuffle=False, batch_size=args['eval_batch_size'],
                                  num_workers=args['num_workers'], pin_memory=True,
-                                 collate_fn=partial(collate_fn, args=args, tokenizer=tokenizer))
+                                 collate_fn=partial(util.collate_fn, tokenizer=tokenizer))
 
     return (tokenized_dataset['train'], train_dataloader), (tokenized_dataset['test'], test_dataloader), cot_info
 
@@ -877,6 +838,8 @@ def evaluate_generation(args, model, dataset, dataloader, tokenizer, cot_info):
     model.eval()
     predictions = []
     targets = []
+
+    # Iterate through the evaluation dataloader and collect the generated predictions as strings
     for idx, batch in tqdm(enumerate(dataloader), total=len(dataloader), disable=not accelerator.is_main_process,
                            desc='Evaluation Gen Loop'):
         output_ = accelerator.unwrap_model(model).generate(
@@ -961,42 +924,6 @@ def evaluate_generation(args, model, dataset, dataloader, tokenizer, cot_info):
     # Metric summary:
     model.train()
     return {'value_accuracy': value_accuracy}
-
-
-def collate_fn(batch, args, tokenizer):
-    max_input_length = max([len(item['input_ids']) for item in batch])
-    max_target_length = max([len(item['labels']) for item in batch])
-    max_prefix_length = max([len(item['prefix']) for item in batch])
-
-    input_ids, input_ids_left_padded = [], []
-    attention_mask, attention_mask_left_padded = [], []
-    labels, labels_left_padded = [], []
-    prefix, prefix_left_padded = [], []
-    prefix_attention_mask, prefix_attention_mask_left_padded = [], []
-
-    for item in batch:
-        labels_left_padded.append([-100] * (max_target_length - len(item['labels'])) + item['labels'])
-        prefix_left_padded.append([tokenizer.pad_token_id] * (max_prefix_length - len(item['prefix'])) + item['prefix'])
-        prefix_attention_mask_left_padded.append(
-            [0] * (max_prefix_length - len(item['prefix_attention_mask'])) + item['prefix_attention_mask'])
-
-    ppo_forward_kwargs = {
-        'query': [item['prefix_text'] for item in batch],
-        'query_tensors': torch.LongTensor(prefix_left_padded),
-        'query_tensors_attention_mask': torch.BoolTensor(prefix_attention_mask_left_padded),
-        'answer_values': [item['answer_value'].replace(',', '') for item in batch],
-        'item_ids': torch.LongTensor([int(item['item_id'].split('_')[1]) for item in batch]),
-    }
-    generate_prefix_kwargs = {
-        'input_ids': torch.LongTensor(prefix_left_padded),
-        'attention_mask': torch.BoolTensor(prefix_attention_mask_left_padded),
-        'labels': torch.LongTensor(labels_left_padded)
-    }
-
-    return {
-        'ppo_forward_kwargs': ppo_forward_kwargs,
-        'generate_prefix_kwargs': generate_prefix_kwargs,
-    }
 
 
 if __name__ == '__main__':
