@@ -376,7 +376,7 @@ def main():
         args.max_seq_len,
         sft_only_data_path=args.sft_only_data_path,
         reload=True,
-    )
+    )   # eval dataset not used for SFT
 
     print("train length:{}".format(len(train_dataset)))
 
@@ -484,6 +484,7 @@ def main():
 
         # # Log
         # print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
+        # model.tput_timer.update_epoch_count()
         # if args.wandb_log:
         #     wandb.log(
         #         {
