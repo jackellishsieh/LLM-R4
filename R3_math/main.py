@@ -90,11 +90,13 @@ def prepare_cot_info(src_name):
         cot_trigger = '\n\n### Response:'
         answer_trigger = '\n####'
 
-
+    # post process final answers by removing commas and spaces
     post_process_final_answer_fn_mapper = {
         'gsm8k': lambda x: float(x.replace(',', '').strip()),
         'svamp': lambda x: float(x.replace(',', '').strip()),
     }
+
+    # run code to extract answer preceding ####
     post_process_completed_question_answer_fn_mapper = {
         ('python', 'gsm8k'): lambda completed_question_answer: float(run_python_code(code_gen=completed_question_answer.split(cot_trigger)[-1].strip())),
         ('python', 'svamp'): lambda completed_question_answer: float(run_python_code(code_gen=completed_question_answer.split(cot_trigger)[-1].strip())),
@@ -102,6 +104,8 @@ def prepare_cot_info(src_name):
         ('nl', 'gsm8k'): lambda completed_question_answer: float(completed_question_answer.split(cot_trigger)[-1].split(answer_trigger)[-1].strip()),
         ('nl', 'svamp'): lambda completed_question_answer: float(completed_question_answer.split(cot_trigger)[-1].split(answer_trigger)[-1].strip()),
     }
+
+    # compare for equality, essentially
     compare_answer_fn_mapper = {
         'gsm8k': lambda extracted_ans, target_answer: abs(extracted_ans - target_answer) <= 1e-2,
         'svamp': lambda extracted_ans, target_answer: abs(extracted_ans - target_answer) <= 1e-2,
@@ -330,9 +334,18 @@ def logging_values(ids, vpreds, rets, advs, old_vpreds, rews, score_rews, masks,
         accelerator.print('\n')
 
 
-def rollout(args, model, ref_model, tokenizer, query_tensors, query_tensors_attention_mask, answer_values, src_name, cot_info):
+def rollout(args, 
+            model,
+            ref_model,
+            tokenizer,
+            query_tensors,
+            query_tensors_attention_mask,
+            answer_values,  # the actual answers
+            src_name, 
+            cot_info):
     model.eval()
     with torch.no_grad():
+        # Sample a completion
         gen_output = accelerator.unwrap_model(model).generate(
             input_ids=query_tensors,
             attention_mask=query_tensors_attention_mask,
@@ -355,14 +368,20 @@ def rollout(args, model, ref_model, tokenizer, query_tensors, query_tensors_atte
     post_process_completed_question_answer_fn_mapper = cot_info['post_process_completed_question_answer_fn_mapper']
     correctness = []
     for completed_ids, a_value in zip(completed_tensors, answer_values):
-        completed_text = tokenizer.decode(completed_ids.cpu().numpy().tolist(), skip_special_tokens=True)
+        # decode the completion
+        completed_text: str = tokenizer.decode(completed_ids.cpu().numpy().tolist(), skip_special_tokens=True)
+
+        # attempt to extract the produced answer
         try:
             with timeout(TIMEOUT):
                 extracted_ans = post_process_completed_question_answer_fn_mapper[(args['engine'], src_name)](completed_text.strip())
         except:
             extracted_ans = None
 
+        # get the target answer
         target_value = post_process_final_answer_fn_mapper[src_name](a_value)
+
+        # compare the extracted answer with the target answer (1 if correct, 0.2 if numeric, 0 if none)
         if extracted_ans is not None:
             if compare_answer_fn_mapper[src_name](extracted_ans, target_value):
                 is_correct = 1
@@ -371,6 +390,24 @@ def rollout(args, model, ref_model, tokenizer, query_tensors, query_tensors_atte
         else:
             is_correct = 0
         correctness.append(is_correct)
+
+        # Write to file
+        with open("/home/ubuntu/LLM-R4/log_dir/question-answers.txt", "a") as file:
+            file.write("=" * 50 + "\n")
+
+            question_string: str = tokenizer.decode(query_tensors[0].cpu().numpy().tolist(), skip_special_tokens=True)
+            completion_string: str = completed_text.removeprefix(question_string).strip()
+
+            file.write(f"QUESTION:\n\t")
+            file.write(question_string.replace("\n", "\n\t"))
+
+            file.write(f"\n\nCOMPLETION:\n\t")
+            file.write(completion_string.replace("\n", "\n\t"))
+
+            file.write(f"\n\nEXTRACTED answer: {extracted_ans}")
+            file.write(f"\nTARGET answer: {target_value}")
+            file.write(f"\nCORRECTNESS: {is_correct}")
+            file.write("\n\n\n")
 
     model_input_ids = completed_tensors
     model_attention_mask = (completed_tensors != tokenizer.pad_token_id)
@@ -451,11 +488,13 @@ def train_one_epoch(args, model, ref_model, train_dataset, train_dataloader, opt
 
     model.train()
     epoch_result_dict = defaultdict(list)
+
+    # For each batch
     for idx, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader),
                            disable=not accelerator.is_main_process, desc='Train Loop'):
         result_dict = defaultdict(list)
 
-        # Do rollout first
+        # Perform rollout
         model.eval()
         model_input_ids, model_attention_mask, mask, rew, score_rew, kl_rew, ret, correctness, val, old_logprob, ref_logprob, adv = rollout(
             args, model, ref_model, tokenizer,
@@ -835,8 +874,11 @@ def main(args):
             'best_eval_log_dict': best_eval_log_dict,
             'most_recent_ckpts_paths': most_recent_ckpts_paths,
         }
+
+        # Run one epoch on the data
         train_epoch_result_dict, global_step, global_iter_num = train_one_epoch(**kwargs)
 
+        # Create eval dict, tracking current and best
         eval_log_dict = {}
         is_best = False
         if evaluating_epoch_freq is not None and epoch % evaluating_epoch_freq == 0:
@@ -847,11 +889,13 @@ def main(args):
                 is_best = True
                 best_eval_log_dict['Eval.Gen.value_accuracy_best'] = eval_log_dict['Eval.Gen.value_accuracy']
 
+        # Create train dict
         train_log_dict = {}
         if logging_epoch_freq is not None and epoch % logging_epoch_freq == 0:
             train_log_dict = {f'Train.{k}': sum(v) / len(v) if isinstance(v, list) else v for k, v in
                               train_epoch_result_dict.items()}
 
+        # If either are being logged, log to wandb
         if eval_log_dict or train_log_dict:
             log_dict = {'lr': scheduler.get_last_lr()[0], **train_log_dict, **eval_log_dict, **best_eval_log_dict}
             if accelerator.is_main_process and args['wandb_log']:
@@ -862,6 +906,7 @@ def main(args):
             accelerator.print(
                 f"[Epoch={epoch}/{args['n_epochs']}, Step={global_step}] {log_dict}")
 
+        # Save model if desired
         if saving_epoch_freq is not None and epoch % saving_epoch_freq == 0:
             if is_best:
                 save_path = os.path.join(model_dir, f'best')
