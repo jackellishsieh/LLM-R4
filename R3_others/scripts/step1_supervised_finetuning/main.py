@@ -30,7 +30,6 @@ from transformers import (
 
 import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
-from deepspeed import get_accelerator
 
 import wandb
 
@@ -283,10 +282,10 @@ def main():
     print("DDP: ", torch.distributed.is_initialized())
 
     if not torch.distributed.is_initialized():
-        device = torch.device(get_accelerator().device_name())
+        device = torch.device(deepspeed.get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
+        deepspeed.get_accelerator().set_device(args.local_rank)
+        device = torch.device(deepspeed.get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
@@ -380,15 +379,14 @@ def main():
     )
 
     print("train length:{}".format(len(train_dataset)))
-    print("eval length:{}".format(len(eval_dataset)))
 
     # Create the dataloaders
     if not torch.distributed.is_initialized():
         train_sampler = RandomSampler(train_dataset)
-        eval_sampler = SequentialSampler(eval_dataset)
+        # eval_sampler = SequentialSampler(eval_dataset)
     else:
         train_sampler = DistributedSampler(train_dataset)
-        eval_sampler = DistributedSampler(eval_dataset)
+        # eval_sampler = DistributedSampler(eval_dataset)
 
     train_dataloader = DataLoader(
         train_dataset,
@@ -396,12 +394,12 @@ def main():
         sampler=train_sampler,
         batch_size=args.per_device_train_batch_size,
     )
-    eval_dataloader = DataLoader(
-        eval_dataset,
-        collate_fn=customized_data_collator,
-        sampler=eval_sampler,
-        batch_size=args.per_device_eval_batch_size,
-    )
+    # eval_dataloader = DataLoader(
+    #     eval_dataset,
+    #     collate_fn=customized_data_collator,
+    #     sampler=eval_sampler,
+    #     batch_size=args.per_device_eval_batch_size,
+    # )
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
@@ -474,6 +472,7 @@ def main():
                     },
                     step=step + epoch * len(train_dataloader),
                 )
+        model.tput_timer.update_epoch_count()
 
         # No evaluation during SFT... yet
         # # Evaluate on the validation set each epoch.
@@ -483,17 +482,16 @@ def main():
         # )
         # perplexity, eval_loss = evaluation(model, eval_dataloader)
 
-        # Log
-        print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
-        model.tput_timer.update_epoch_count()
-        if args.wandb_log:
-            wandb.log(
-                {
-                    "eval/loss": eval_loss,
-                    "eval/perplexity": perplexity,
-                    "eval/epoch": epoch,
-                }
-            )
+        # # Log
+        # print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
+        # if args.wandb_log:
+        #     wandb.log(
+        #         {
+        #             "eval/loss": eval_loss,
+        #             "eval/perplexity": perplexity,
+        #             "eval/epoch": epoch,
+        #         }
+        #     )
 
     if args.output_dir is not None:
         print_rank_0("saving the final model ...", args.global_rank)
