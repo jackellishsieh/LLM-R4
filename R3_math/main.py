@@ -90,13 +90,11 @@ def prepare_cot_info(src_name):
         cot_trigger = '\n\n### Response:'
         answer_trigger = '\n####'
 
-    # post process final answers by removing commas and spaces
+
     post_process_final_answer_fn_mapper = {
         'gsm8k': lambda x: float(x.replace(',', '').strip()),
         'svamp': lambda x: float(x.replace(',', '').strip()),
     }
-
-    # run code to extract answer preceding ####
     post_process_completed_question_answer_fn_mapper = {
         ('python', 'gsm8k'): lambda completed_question_answer: float(run_python_code(code_gen=completed_question_answer.split(cot_trigger)[-1].strip())),
         ('python', 'svamp'): lambda completed_question_answer: float(run_python_code(code_gen=completed_question_answer.split(cot_trigger)[-1].strip())),
@@ -104,8 +102,6 @@ def prepare_cot_info(src_name):
         ('nl', 'gsm8k'): lambda completed_question_answer: float(completed_question_answer.split(cot_trigger)[-1].split(answer_trigger)[-1].strip()),
         ('nl', 'svamp'): lambda completed_question_answer: float(completed_question_answer.split(cot_trigger)[-1].split(answer_trigger)[-1].strip()),
     }
-
-    # compare for equality, essentially
     compare_answer_fn_mapper = {
         'gsm8k': lambda extracted_ans, target_answer: abs(extracted_ans - target_answer) <= 1e-2,
         'svamp': lambda extracted_ans, target_answer: abs(extracted_ans - target_answer) <= 1e-2,
