@@ -466,16 +466,11 @@ def rollout(
             is_correct = 0
         correctness.append(is_correct)
 
-        # Write to file
         with open("/home/ubuntu/LLM-R4/log_dir/question-answers.txt", "a") as file:
             file.write("=" * 50 + "\n")
 
-            question_string: str = tokenizer.decode(
-                query_tensors[0].cpu().numpy().tolist(), skip_special_tokens=True
-            )
-            completion_string: str = completed_text.removeprefix(
-                question_string
-            ).strip()
+            question_string: str = tokenizer.decode(query_tensors[0].cpu().numpy().tolist(), skip_special_tokens=True)
+            completion_string: str = completed_text.removeprefix(question_string).strip()
 
             file.write(f"QUESTION:\n\t")
             file.write(question_string.replace("\n", "\n\t"))
@@ -487,7 +482,7 @@ def rollout(
             file.write(f"\nTARGET answer: {target_value}")
             file.write(f"\nCORRECTNESS: {is_correct}")
             file.write("\n\n\n")
-
+            
     model_input_ids = completed_tensors
     model_attention_mask = completed_tensors != tokenizer.pad_token_id
     with torch.no_grad():

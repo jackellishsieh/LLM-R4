@@ -1,0 +1,639 @@
+[2025-05-24 06:24:32,983] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:49: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, input, weight, bias=None):
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:67: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+[2025-05-24 06:24:41,226] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.7
+[93m [WARNING] [0m using untested triton version (3.3.0), only 1.0.0 is known to be compatible
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:49: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, input, weight, bias=None):
+/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/deepspeed/runtime/zero/linear.py:67: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+[2025-05-24 06:24:45,366] [INFO] [comm.py:637:init_distributed] cdb=None
+[2025-05-24 06:24:45,366] [INFO] [comm.py:668:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+{'model_name_or_path': 'dillonkn/qwen2.5-0.5b-reasoning-sft', 'tokenizer_name_or_path': 'dillonkn/qwen2.5-0.5b-reasoning-sft', 'model_dir': '/home/ubuntu/LLM-R4/output_models', 'train_file': '../data/gsm8k_original_train.json', 'test_file': '../data/gsm8k_original_test.json', 'batch_size': 4, 'mini_batch_size': 4, 'eval_batch_size': 8, 'ppo_epochs': 2, 'n_epochs': 10, 'num_workers': 0, 'learning_rate': 3e-07, 'weight_decay': 0.0, 'warmup_step': 0, 'clip_grad_norm': 1.0, 'vf_coef': 5.0, 'kl_coef': 0.05, 'gamma': 1.0, 'lam': 0.95, 'ref_model_name_or_path': 'dillonkn/qwen2.5-0.5b-reasoning-sft', 'evaluating_epoch_freq': 1, 'logging_epoch_freq': 1, 'saving_epoch_freq': 1, 'evaluating_step_freq': None, 'logging_step_freq': 1, 'logging_seq_str_step_freq': None, 'logging_values_step_freq': None, 'saving_step_freq': None, 'seed': 42, 'max_input_length': 700, 'max_gen_length': 700, 'keep_num_ckpt': 0, 'separate_vf': 0, 'init_value_model_with_rm': 0, 'init_value_head_with_rm': 0, 'rm_model_name_or_path': '/your_model_path_here', 'wandb_log': True, 'wandb_project': 'R3_qwen', 'wandb_entity': '', 'wandb_run_name': 'gsm8k_vanilla_rl', 'engine': 'nl', 'use_small_vocab': 0, 'adv_whitening': 'global'}
+{
+  "model_name_or_path": "dillonkn/qwen2.5-0.5b-reasoning-sft",
+  "tokenizer_name_or_path": "dillonkn/qwen2.5-0.5b-reasoning-sft",
+  "model_dir": "/home/ubuntu/LLM-R4/output_models",
+  "train_file": "../data/gsm8k_original_train.json",
+  "test_file": "../data/gsm8k_original_test.json",
+  "batch_size": 4,
+  "mini_batch_size": 4,
+  "eval_batch_size": 8,
+  "ppo_epochs": 2,
+  "n_epochs": 10,
+  "num_workers": 0,
+  "learning_rate": 3e-07,
+  "weight_decay": 0.0,
+  "warmup_step": 0,
+  "clip_grad_norm": 1.0,
+  "vf_coef": 5.0,
+  "kl_coef": 0.05,
+  "gamma": 1.0,
+  "lam": 0.95,
+  "ref_model_name_or_path": "dillonkn/qwen2.5-0.5b-reasoning-sft",
+  "evaluating_epoch_freq": 1,
+  "logging_epoch_freq": 1,
+  "saving_epoch_freq": 1,
+  "evaluating_step_freq": null,
+  "logging_step_freq": 1,
+  "logging_seq_str_step_freq": null,
+  "logging_values_step_freq": null,
+  "saving_step_freq": null,
+  "seed": 42,
+  "max_input_length": 700,
+  "max_gen_length": 700,
+  "keep_num_ckpt": 0,
+  "separate_vf": 0,
+  "init_value_model_with_rm": 0,
+  "init_value_head_with_rm": 0,
+  "rm_model_name_or_path": "/your_model_path_here",
+  "wandb_log": true,
+  "wandb_project": "R3_qwen",
+  "wandb_entity": "",
+  "wandb_run_name": "gsm8k_vanilla_rl",
+  "engine": "nl",
+  "use_small_vocab": 0,
+  "adv_whitening": "global"
+}
+wandb: Currently logged in as: ez26 (cs224r_project_team) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.19.11
+wandb: Run data is saved locally in /home/ubuntu/LLM-R4/R3_math/scripts/wandb/run-20250524_062446-cj4ua9kb
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run gsm8k_vanilla_rl
+wandb: ⭐️ View project at https://wandb.ai/cs224r_project_team/R3_qwen
+wandb: 🚀 View run at https://wandb.ai/cs224r_project_team/R3_qwen/runs/cj4ua9kb
+Raw data: DatasetDict({
+    train: Dataset({
+        features: ['item_id', 'question', 'answer_cot', 'answer_value'],
+        num_rows: 7473
+    })
+    test: Dataset({
+        features: ['item_id', 'question', 'answer_value'],
+        num_rows: 1319
+    })
+})
+Map:   0%|          | 0/7473 [00:00<?, ? examples/s]Map:  13%|█▎        | 1000/7473 [00:00<00:05, 1200.42 examples/s]Map:  27%|██▋       | 2000/7473 [00:01<00:04, 1216.97 examples/s]Map:  40%|████      | 3000/7473 [00:02<00:03, 1225.53 examples/s]Map:  54%|█████▎    | 4000/7473 [00:03<00:02, 1202.41 examples/s]Map:  67%|██████▋   | 5000/7473 [00:04<00:02, 1196.00 examples/s]Map:  80%|████████  | 6000/7473 [00:04<00:01, 1194.52 examples/s]Map:  94%|█████████▎| 7000/7473 [00:05<00:00, 1182.15 examples/s]Map: 100%|██████████| 7473/7473 [00:06<00:00, 1181.83 examples/s]Map: 100%|██████████| 7473/7473 [00:06<00:00, 1192.30 examples/s]
+Map:   0%|          | 0/1319 [00:00<?, ? examples/s]Map:  76%|███████▌  | 1000/1319 [00:00<00:00, 1664.13 examples/s]Map: 100%|██████████| 1319/1319 [00:00<00:00, 1636.57 examples/s]Map: 100%|██████████| 1319/1319 [00:00<00:00, 1636.41 examples/s]
+Processed data: DatasetDict({
+    train: Dataset({
+        features: ['item_id', 'question', 'answer_cot', 'answer_value', 'input_ids', 'labels', 'attention_mask', 'prefix', 'prefix_attention_mask', 'prefix_text'],
+        num_rows: 7473
+    })
+    test: Dataset({
+        features: ['item_id', 'question', 'answer_value', 'input_ids', 'labels', 'attention_mask', 'prefix', 'prefix_attention_mask', 'prefix_text', 'answer_cot'],
+        num_rows: 1319
+    })
+})
+[rank0]:[W524 06:24:54.092381337 ProcessGroupNCCL.cpp:4715] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+WARNING:root:A <class 'transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM'> model is loaded from 'dillonkn/qwen2.5-0.5b-reasoning-sft', and no v_head weight is found. This IS expected if you are not resuming PPO training.
+WARNING:root:A <class 'transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM'> model is loaded from 'dillonkn/qwen2.5-0.5b-reasoning-sft', and no v_head weight is found. This IS expected if you are not resuming PPO training.
+***** Running training *****
+  Num examples = 7473
+  Num Epochs = 10
+  Instantaneous batch size per device = 4
+  Total train batch size (w. parallel, distributed & accumulation) = 4
+  Gradient Accumulation steps = 1
+  Total optimization steps = 18690
+  Warm up step: 0
+  Learning rate: 3e-07
+
+[2025-05-24 06:24:57,305] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed info: version=0.14.4, git-hash=unknown, git-branch=unknown
+[2025-05-24 06:25:11,282] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
+[2025-05-24 06:25:11,283] [INFO] [logging.py:96:log_dist] [Rank 0] Using client Optimizer as basic optimizer
+[2025-05-24 06:25:11,283] [INFO] [logging.py:96:log_dist] [Rank 0] Removing param_group that has no 'params' in the basic Optimizer
+[2025-05-24 06:25:11,293] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Basic Optimizer = AdamW
+[2025-05-24 06:25:11,293] [INFO] [utils.py:56:is_zero_supported_optimizer] Checking ZeRO support for optimizer=AdamW type=<class 'torch.optim.adamw.AdamW'>
+[2025-05-24 06:25:11,293] [INFO] [logging.py:96:log_dist] [Rank 0] Creating torch.bfloat16 ZeRO stage 2 optimizer
+[2025-05-24 06:25:11,293] [INFO] [stage_1_and_2.py:148:__init__] Reduce bucket size 500,000,000
+[2025-05-24 06:25:11,293] [INFO] [stage_1_and_2.py:149:__init__] Allgather bucket size 500,000,000
+[2025-05-24 06:25:11,293] [INFO] [stage_1_and_2.py:150:__init__] CPU Offload: False
+[2025-05-24 06:25:11,293] [INFO] [stage_1_and_2.py:151:__init__] Round robin gradient partitioning: False
+[2025-05-24 06:25:12,302] [INFO] [utils.py:781:see_memory_usage] Before initializing optimizer states
+[2025-05-24 06:25:12,303] [INFO] [utils.py:782:see_memory_usage] MA 2.76 GB         Max_MA 2.76 GB         CA 2.77 GB         Max_CA 3 GB 
+[2025-05-24 06:25:12,303] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 4.69 GB, percent = 15.1%
+[2025-05-24 06:25:12,471] [INFO] [utils.py:781:see_memory_usage] After initializing optimizer states
+[2025-05-24 06:25:12,472] [INFO] [utils.py:782:see_memory_usage] MA 2.76 GB         Max_MA 4.6 GB         CA 4.61 GB         Max_CA 5 GB 
+[2025-05-24 06:25:12,472] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 4.69 GB, percent = 15.1%
+[2025-05-24 06:25:12,472] [INFO] [stage_1_and_2.py:543:__init__] optimizer state initialized
+[2025-05-24 06:25:12,643] [INFO] [utils.py:781:see_memory_usage] After initializing ZeRO optimizer
+[2025-05-24 06:25:12,643] [INFO] [utils.py:782:see_memory_usage] MA 2.76 GB         Max_MA 2.76 GB         CA 4.61 GB         Max_CA 5 GB 
+[2025-05-24 06:25:12,644] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 4.7 GB, percent = 15.2%
+[2025-05-24 06:25:12,649] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Final Optimizer = DeepSpeedZeroOptimizer
+[2025-05-24 06:25:12,649] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed using client LR scheduler
+[2025-05-24 06:25:12,649] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed LR Scheduler = None
+[2025-05-24 06:25:12,649] [INFO] [logging.py:96:log_dist] [Rank 0] step=0, skipped=0, lr=[3e-07, 3e-07], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2025-05-24 06:25:12,650] [INFO] [config.py:997:print] DeepSpeedEngine configuration:
+[2025-05-24 06:25:12,650] [INFO] [config.py:1001:print]   activation_checkpointing_config  {
+    "partition_activations": false, 
+    "contiguous_memory_optimization": false, 
+    "cpu_checkpointing": false, 
+    "number_checkpoints": null, 
+    "synchronize_checkpoint_boundary": false, 
+    "profile": false
+}
+[2025-05-24 06:25:12,650] [INFO] [config.py:1001:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True}
+[2025-05-24 06:25:12,650] [INFO] [config.py:1001:print]   amp_enabled .................. False
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   amp_params ................... False
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   autotuning_config ............ {
+    "enabled": false, 
+    "start_step": null, 
+    "end_step": null, 
+    "metric_path": null, 
+    "arg_mappings": null, 
+    "metric": "throughput", 
+    "model_info": null, 
+    "results_dir": "autotuning_results", 
+    "exps_dir": "autotuning_exps", 
+    "overwrite": true, 
+    "fast": true, 
+    "start_profile_step": 3, 
+    "end_profile_step": 5, 
+    "tuner_type": "gridsearch", 
+    "tuner_early_stopping": 5, 
+    "tuner_num_trials": 50, 
+    "model_info_path": null, 
+    "mp_size": 1, 
+    "max_train_batch_size": null, 
+    "min_train_batch_size": 1, 
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
+    "min_train_micro_batch_size_per_gpu": 1, 
+    "num_tuning_micro_batch_sizes": 3
+}
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   bfloat16_enabled ............. True
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   bfloat16_immediate_grad_update  False
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   checkpoint_parallel_write_pipeline  False
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   checkpoint_tag_validation_enabled  True
+[2025-05-24 06:25:12,651] [INFO] [config.py:1001:print]   checkpoint_tag_validation_fail  False
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   comms_config ................. <deepspeed.comm.config.DeepSpeedCommsConfig object at 0x74a2af648d30>
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   communication_data_type ...... None
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   compression_config ........... {'weight_quantization': {'shared_parameters': {'enabled': False, 'quantizer_kernel': False, 'schedule_offset': 0, 'quantize_groups': 1, 'quantize_verbose': False, 'quantization_type': 'symmetric', 'quantize_weight_in_forward': False, 'rounding': 'nearest', 'fp16_mixed_quantize': False, 'quantize_change_ratio': 0.001}, 'different_groups': {}}, 'activation_quantization': {'shared_parameters': {'enabled': False, 'quantization_type': 'symmetric', 'range_calibration': 'dynamic', 'schedule_offset': 1000}, 'different_groups': {}}, 'sparse_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'row_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'head_pruning': {'shared_parameters': {'enabled': False, 'method': 'topk', 'schedule_offset': 1000}, 'different_groups': {}}, 'channel_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'layer_reduction': {'enabled': False}}
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   curriculum_enabled_legacy .... False
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   curriculum_params_legacy ..... False
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   data_efficiency_config ....... {'enabled': False, 'seed': 1234, 'data_sampling': {'enabled': False, 'num_epochs': 1000, 'num_workers': 0, 'curriculum_learning': {'enabled': False}}, 'data_routing': {'enabled': False, 'random_ltd': {'enabled': False, 'layer_token_lr_schedule': {'enabled': False}}}}
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   data_efficiency_enabled ...... False
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   dataloader_drop_last ......... False
+[2025-05-24 06:25:12,652] [INFO] [config.py:1001:print]   disable_allgather ............ False
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   dump_state ................... False
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   dynamic_loss_scale_args ...... None
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   eigenvalue_enabled ........... False
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   eigenvalue_gas_boundary_resolution  1
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   eigenvalue_layer_name ........ bert.encoder.layer
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   eigenvalue_layer_num ......... 0
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   eigenvalue_max_iter .......... 100
+[2025-05-24 06:25:12,653] [INFO] [config.py:1001:print]   eigenvalue_stability ......... 1e-06
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   eigenvalue_tol ............... 0.01
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   eigenvalue_verbose ........... False
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   elasticity_enabled ........... False
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   flops_profiler_config ........ {
+    "enabled": false, 
+    "recompute_fwd_factor": 0.0, 
+    "profile_step": 1, 
+    "module_depth": -1, 
+    "top_modules": 1, 
+    "detailed": true, 
+    "output_file": null
+}
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   fp16_auto_cast ............... None
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   fp16_enabled ................. False
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   fp16_master_weights_and_gradients  False
+[2025-05-24 06:25:12,654] [INFO] [config.py:1001:print]   global_rank .................. 0
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   grad_accum_dtype ............. None
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   gradient_accumulation_steps .. 1
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   gradient_clipping ............ 1.0
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   gradient_predivide_factor .... 1.0
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   graph_harvesting ............. False
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   hybrid_engine ................ enabled=False max_out_tokens=512 inference_tp_size=1 release_inference_cache=False pin_parameters=True tp_gather_partition_size=8
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   initial_dynamic_scale ........ 1
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   load_universal_checkpoint .... False
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   loss_scale ................... 1.0
+[2025-05-24 06:25:12,655] [INFO] [config.py:1001:print]   memory_breakdown ............. False
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   mics_hierarchial_params_gather  False
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   mics_shard_size .............. -1
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   monitor_config ............... tensorboard=TensorBoardConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') comet=CometConfig(enabled=False, samples_log_interval=100, project=None, workspace=None, api_key=None, experiment_name=None, experiment_key=None, online=None, mode=None) wandb=WandbConfig(enabled=False, group=None, team=None, project='deepspeed') csv_monitor=CSVConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') enabled=False
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   nebula_config ................ {
+    "enabled": false, 
+    "persistent_storage_path": null, 
+    "persistent_time_interval": 100, 
+    "num_of_version_in_retention": 2, 
+    "enable_nebula_load": true, 
+    "load_path": null
+}
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   optimizer_legacy_fusion ...... False
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   optimizer_name ............... None
+[2025-05-24 06:25:12,656] [INFO] [config.py:1001:print]   optimizer_params ............. None
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0, 'pipe_partitioned': True, 'grad_partitioned': True}
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   pld_enabled .................. False
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   pld_params ................... False
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   prescale_gradients ........... False
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   scheduler_name ............... None
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   scheduler_params ............. None
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   seq_parallel_communication_data_type  torch.float32
+[2025-05-24 06:25:12,657] [INFO] [config.py:1001:print]   sparse_attention ............. None
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   sparse_gradients_enabled ..... False
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   steps_per_print .............. inf
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   timers_config ................ enabled=True synchronized=True
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   train_batch_size ............. 4
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   train_micro_batch_size_per_gpu  4
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   use_data_before_expert_parallel_  False
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   use_node_local_storage ....... False
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   wall_clock_breakdown ......... False
+[2025-05-24 06:25:12,658] [INFO] [config.py:1001:print]   weight_quantization_config ... None
+[2025-05-24 06:25:12,659] [INFO] [config.py:1001:print]   world_size ................... 1
+[2025-05-24 06:25:12,659] [INFO] [config.py:1001:print]   zero_allow_untested_optimizer  True
+[2025-05-24 06:25:12,659] [INFO] [config.py:1001:print]   zero_config .................. stage=2 contiguous_gradients=True reduce_scatter=True reduce_bucket_size=500,000,000 use_multi_rank_bucket_allreduce=True allgather_partitions=True allgather_bucket_size=500,000,000 overlap_comm=False load_from_fp32_weights=True elastic_checkpoint=False offload_param=DeepSpeedZeroOffloadParamConfig(device='none', nvme_path=None, buffer_count=5, buffer_size=100,000,000, max_in_cpu=1,000,000,000, pin_memory=False) offload_optimizer=DeepSpeedZeroOffloadOptimizerConfig(device='none', nvme_path=None, buffer_count=4, pin_memory=False, pipeline=False, pipeline_read=False, pipeline_write=False, fast_init=False, ratio=1.0) sub_group_size=1,000,000,000 cpu_offload_param=None cpu_offload_use_pin_memory=None cpu_offload=None prefetch_bucket_size=50,000,000 param_persistence_threshold=100,000 model_persistence_threshold=sys.maxsize max_live_parameters=1,000,000,000 max_reuse_distance=1,000,000,000 gather_16bit_weights_on_model_save=False use_all_reduce_for_fetch_params=False stage3_gather_fp16_weights_on_model_save=False ignore_unused_parameters=True legacy_stage1=False round_robin_gradients=False zero_hpz_partition_size=1 zero_quantized_weights=False zero_quantized_nontrainable_weights=False zero_quantized_gradients=False mics_shard_size=-1 mics_hierarchical_params_gather=False memory_efficient_linear=True pipeline_loading_checkpoint=False override_module_apply=True
+[2025-05-24 06:25:12,659] [INFO] [config.py:1001:print]   zero_enabled ................. True
+[2025-05-24 06:25:12,659] [INFO] [config.py:1001:print]   zero_force_ds_cpu_optimizer .. True
+[2025-05-24 06:25:12,659] [INFO] [config.py:1001:print]   zero_optimization_stage ...... 2
+[2025-05-24 06:25:12,659] [INFO] [config.py:987:print_user_config]   json = {
+    "train_batch_size": 4, 
+    "train_micro_batch_size_per_gpu": 4, 
+    "gradient_accumulation_steps": 1, 
+    "zero_optimization": {
+        "stage": 2, 
+        "offload_optimizer": {
+            "device": "none", 
+            "nvme_path": null
+        }, 
+        "offload_param": {
+            "device": "none", 
+            "nvme_path": null
+        }, 
+        "stage3_gather_16bit_weights_on_model_save": false
+    }, 
+    "gradient_clipping": 1.0, 
+    "steps_per_print": inf, 
+    "bf16": {
+        "enabled": true
+    }, 
+    "fp16": {
+        "enabled": false
+    }, 
+    "zero_allow_untested_optimizer": true
+}
+[2025-05-24 06:25:12,660] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed info: version=0.14.4, git-hash=unknown, git-branch=unknown
+[2025-05-24 06:25:12,984] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
+[2025-05-24 06:25:12,985] [INFO] [logging.py:96:log_dist] [Rank 0] Creating BF16 optimizer
+[2025-05-24 06:25:13,154] [INFO] [utils.py:781:see_memory_usage] begin bf16_optimizer
+[2025-05-24 06:25:13,155] [INFO] [utils.py:782:see_memory_usage] MA 3.68 GB         Max_MA 3.68 GB         CA 4.62 GB         Max_CA 5 GB 
+[2025-05-24 06:25:13,155] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 4.82 GB, percent = 15.6%
+[2025-05-24 06:25:13,323] [INFO] [utils.py:781:see_memory_usage] end bf16_optimizer
+[2025-05-24 06:25:13,324] [INFO] [utils.py:782:see_memory_usage] MA 3.68 GB         Max_MA 3.68 GB         CA 4.62 GB         Max_CA 5 GB 
+[2025-05-24 06:25:13,324] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 4.82 GB, percent = 15.6%
+[2025-05-24 06:25:13,325] [INFO] [config.py:997:print] DeepSpeedEngine configuration:
+[2025-05-24 06:25:13,325] [INFO] [config.py:1001:print]   activation_checkpointing_config  {
+    "partition_activations": false, 
+    "contiguous_memory_optimization": false, 
+    "cpu_checkpointing": false, 
+    "number_checkpoints": null, 
+    "synchronize_checkpoint_boundary": false, 
+    "profile": false
+}
+[2025-05-24 06:25:13,325] [INFO] [config.py:1001:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True}
+[2025-05-24 06:25:13,325] [INFO] [config.py:1001:print]   amp_enabled .................. False
+[2025-05-24 06:25:13,325] [INFO] [config.py:1001:print]   amp_params ................... False
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   autotuning_config ............ {
+    "enabled": false, 
+    "start_step": null, 
+    "end_step": null, 
+    "metric_path": null, 
+    "arg_mappings": null, 
+    "metric": "throughput", 
+    "model_info": null, 
+    "results_dir": "autotuning_results", 
+    "exps_dir": "autotuning_exps", 
+    "overwrite": true, 
+    "fast": true, 
+    "start_profile_step": 3, 
+    "end_profile_step": 5, 
+    "tuner_type": "gridsearch", 
+    "tuner_early_stopping": 5, 
+    "tuner_num_trials": 50, 
+    "model_info_path": null, 
+    "mp_size": 1, 
+    "max_train_batch_size": null, 
+    "min_train_batch_size": 1, 
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
+    "min_train_micro_batch_size_per_gpu": 1, 
+    "num_tuning_micro_batch_sizes": 3
+}
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   bfloat16_enabled ............. True
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   bfloat16_immediate_grad_update  False
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   checkpoint_parallel_write_pipeline  False
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   checkpoint_tag_validation_enabled  True
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   checkpoint_tag_validation_fail  False
+[2025-05-24 06:25:13,326] [INFO] [config.py:1001:print]   comms_config ................. <deepspeed.comm.config.DeepSpeedCommsConfig object at 0x74a2aec51f70>
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   communication_data_type ...... None
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   compression_config ........... {'weight_quantization': {'shared_parameters': {'enabled': False, 'quantizer_kernel': False, 'schedule_offset': 0, 'quantize_groups': 1, 'quantize_verbose': False, 'quantization_type': 'symmetric', 'quantize_weight_in_forward': False, 'rounding': 'nearest', 'fp16_mixed_quantize': False, 'quantize_change_ratio': 0.001}, 'different_groups': {}}, 'activation_quantization': {'shared_parameters': {'enabled': False, 'quantization_type': 'symmetric', 'range_calibration': 'dynamic', 'schedule_offset': 1000}, 'different_groups': {}}, 'sparse_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'row_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'head_pruning': {'shared_parameters': {'enabled': False, 'method': 'topk', 'schedule_offset': 1000}, 'different_groups': {}}, 'channel_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'layer_reduction': {'enabled': False}}
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   curriculum_enabled_legacy .... False
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   curriculum_params_legacy ..... False
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   data_efficiency_config ....... {'enabled': False, 'seed': 1234, 'data_sampling': {'enabled': False, 'num_epochs': 1000, 'num_workers': 0, 'curriculum_learning': {'enabled': False}}, 'data_routing': {'enabled': False, 'random_ltd': {'enabled': False, 'layer_token_lr_schedule': {'enabled': False}}}}
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   data_efficiency_enabled ...... False
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   dataloader_drop_last ......... False
+[2025-05-24 06:25:13,327] [INFO] [config.py:1001:print]   disable_allgather ............ False
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   dump_state ................... False
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   dynamic_loss_scale_args ...... None
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   eigenvalue_enabled ........... False
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   eigenvalue_gas_boundary_resolution  1
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   eigenvalue_layer_name ........ bert.encoder.layer
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   eigenvalue_layer_num ......... 0
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   eigenvalue_max_iter .......... 100
+[2025-05-24 06:25:13,328] [INFO] [config.py:1001:print]   eigenvalue_stability ......... 1e-06
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   eigenvalue_tol ............... 0.01
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   eigenvalue_verbose ........... False
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   elasticity_enabled ........... False
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   flops_profiler_config ........ {
+    "enabled": false, 
+    "recompute_fwd_factor": 0.0, 
+    "profile_step": 1, 
+    "module_depth": -1, 
+    "top_modules": 1, 
+    "detailed": true, 
+    "output_file": null
+}
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   fp16_auto_cast ............... None
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   fp16_enabled ................. False
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   fp16_master_weights_and_gradients  False
+[2025-05-24 06:25:13,329] [INFO] [config.py:1001:print]   global_rank .................. 0
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   grad_accum_dtype ............. None
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   gradient_accumulation_steps .. 1
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   gradient_clipping ............ 1.0
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   gradient_predivide_factor .... 1.0
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   graph_harvesting ............. False
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   hybrid_engine ................ enabled=False max_out_tokens=512 inference_tp_size=1 release_inference_cache=False pin_parameters=True tp_gather_partition_size=8
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   initial_dynamic_scale ........ 1
+[2025-05-24 06:25:13,330] [INFO] [config.py:1001:print]   load_universal_checkpoint .... False
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   loss_scale ................... 1.0
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   memory_breakdown ............. False
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   mics_hierarchial_params_gather  False
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   mics_shard_size .............. -1
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   monitor_config ............... tensorboard=TensorBoardConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') comet=CometConfig(enabled=False, samples_log_interval=100, project=None, workspace=None, api_key=None, experiment_name=None, experiment_key=None, online=None, mode=None) wandb=WandbConfig(enabled=False, group=None, team=None, project='deepspeed') csv_monitor=CSVConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') enabled=False
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   nebula_config ................ {
+    "enabled": false, 
+    "persistent_storage_path": null, 
+    "persistent_time_interval": 100, 
+    "num_of_version_in_retention": 2, 
+    "enable_nebula_load": true, 
+    "load_path": null
+}
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   optimizer_legacy_fusion ...... False
+[2025-05-24 06:25:13,331] [INFO] [config.py:1001:print]   optimizer_name ............... None
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   optimizer_params ............. None
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0, 'pipe_partitioned': True, 'grad_partitioned': True}
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   pld_enabled .................. False
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   pld_params ................... False
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   prescale_gradients ........... False
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   scheduler_name ............... None
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   scheduler_params ............. None
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   seq_parallel_communication_data_type  torch.float32
+[2025-05-24 06:25:13,332] [INFO] [config.py:1001:print]   sparse_attention ............. None
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   sparse_gradients_enabled ..... False
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   steps_per_print .............. inf
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   timers_config ................ enabled=True synchronized=True
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   train_batch_size ............. 4
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   train_micro_batch_size_per_gpu  4
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   use_data_before_expert_parallel_  False
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   use_node_local_storage ....... False
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   wall_clock_breakdown ......... False
+[2025-05-24 06:25:13,333] [INFO] [config.py:1001:print]   weight_quantization_config ... None
+[2025-05-24 06:25:13,334] [INFO] [config.py:1001:print]   world_size ................... 1
+[2025-05-24 06:25:13,334] [INFO] [config.py:1001:print]   zero_allow_untested_optimizer  True
+[2025-05-24 06:25:13,334] [INFO] [config.py:1001:print]   zero_config .................. stage=0 contiguous_gradients=True reduce_scatter=True reduce_bucket_size=500,000,000 use_multi_rank_bucket_allreduce=True allgather_partitions=True allgather_bucket_size=500,000,000 overlap_comm=False load_from_fp32_weights=True elastic_checkpoint=False offload_param=DeepSpeedZeroOffloadParamConfig(device='none', nvme_path=None, buffer_count=5, buffer_size=100,000,000, max_in_cpu=1,000,000,000, pin_memory=False) offload_optimizer=DeepSpeedZeroOffloadOptimizerConfig(device='none', nvme_path=None, buffer_count=4, pin_memory=False, pipeline=False, pipeline_read=False, pipeline_write=False, fast_init=False, ratio=1.0) sub_group_size=1,000,000,000 cpu_offload_param=None cpu_offload_use_pin_memory=None cpu_offload=None prefetch_bucket_size=50,000,000 param_persistence_threshold=100,000 model_persistence_threshold=sys.maxsize max_live_parameters=1,000,000,000 max_reuse_distance=1,000,000,000 gather_16bit_weights_on_model_save=False use_all_reduce_for_fetch_params=False stage3_gather_fp16_weights_on_model_save=False ignore_unused_parameters=True legacy_stage1=False round_robin_gradients=False zero_hpz_partition_size=1 zero_quantized_weights=False zero_quantized_nontrainable_weights=False zero_quantized_gradients=False mics_shard_size=-1 mics_hierarchical_params_gather=False memory_efficient_linear=True pipeline_loading_checkpoint=False override_module_apply=True
+[2025-05-24 06:25:13,334] [INFO] [config.py:1001:print]   zero_enabled ................. False
+[2025-05-24 06:25:13,334] [INFO] [config.py:1001:print]   zero_force_ds_cpu_optimizer .. True
+[2025-05-24 06:25:13,334] [INFO] [config.py:1001:print]   zero_optimization_stage ...... 0
+[2025-05-24 06:25:13,334] [INFO] [config.py:987:print_user_config]   json = {
+    "train_batch_size": 4, 
+    "train_micro_batch_size_per_gpu": 4, 
+    "gradient_accumulation_steps": 1, 
+    "zero_optimization": {
+        "stage": 0, 
+        "offload_optimizer": {
+            "device": "none", 
+            "nvme_path": null
+        }, 
+        "offload_param": {
+            "device": "none", 
+            "nvme_path": null
+        }, 
+        "stage3_gather_16bit_weights_on_model_save": false
+    }, 
+    "gradient_clipping": 1.0, 
+    "steps_per_print": inf, 
+    "bf16": {
+        "enabled": true
+    }, 
+    "fp16": {
+        "enabled": false
+    }, 
+    "zero_allow_untested_optimizer": true
+}
+Train Loop:   0% 0/1869 [00:00<?, ?it/s][Train-Step][Epoch=1/10, Step=1] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '15.652', 'Train.acc': '0.05', 'Train.ncor': '0.2', 'Train.total': '4', 'Train.pg_loss': '-0.00013967', 'Train.vf_loss': '3.128', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 1/1869 [00:18<9:21:17, 18.03s/it][Train-Step][Epoch=1/10, Step=2] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '14.378', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '-0.00025573', 'Train.vf_loss': '2.9605', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 2/1869 [00:34<8:49:51, 17.03s/it][Train-Step][Epoch=1/10, Step=3] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.513', 'Train.acc': '0.125', 'Train.ncor': '0.5', 'Train.total': '4', 'Train.pg_loss': '0.00057019', 'Train.vf_loss': '2.4649', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 3/1869 [00:51<8:47:50, 16.97s/it][Train-Step][Epoch=1/10, Step=4] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '12.291', 'Train.acc': '0.125', 'Train.ncor': '0.5', 'Train.total': '4', 'Train.pg_loss': '0.00084696', 'Train.vf_loss': '2.3483', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 4/1869 [01:06<8:32:21, 16.48s/it][Train-Step][Epoch=1/10, Step=5] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.804', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.00046633', 'Train.vf_loss': '2.6948', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 5/1869 [01:23<8:35:18, 16.59s/it][Train-Step][Epoch=1/10, Step=6] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.663', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.00073985', 'Train.vf_loss': '2.7646', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 6/1869 [01:40<8:37:00, 16.65s/it][Train-Step][Epoch=1/10, Step=7] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '14.915', 'Train.acc': '0.15', 'Train.ncor': '0.6', 'Train.total': '4', 'Train.pg_loss': '-0.00046241', 'Train.vf_loss': '2.8879', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 7/1869 [01:56<8:27:28, 16.35s/it][Train-Step][Epoch=1/10, Step=8] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.32', 'Train.acc': '0.15', 'Train.ncor': '0.6', 'Train.total': '4', 'Train.pg_loss': '-0.00019689', 'Train.vf_loss': '2.5326', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 8/1869 [02:12<8:25:38, 16.30s/it][Train-Step][Epoch=1/10, Step=9] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '10.178', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0010275', 'Train.vf_loss': '2.0184', 'Train.vf_expl_var': '-1'}
+Train Loop:   0% 9/1869 [02:27<8:13:57, 15.93s/it][Train-Step][Epoch=1/10, Step=10] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.532', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00054236', 'Train.vf_loss': '2.2177', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 10/1869 [02:44<8:21:15, 16.18s/it][Train-Step][Epoch=1/10, Step=11] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '7.2187', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '6.6631e-05', 'Train.vf_loss': '1.7577', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 11/1869 [03:00<8:19:04, 16.12s/it][Train-Step][Epoch=1/10, Step=12] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '5.5488', 'Train.acc': '0.15', 'Train.ncor': '0.6', 'Train.total': '4', 'Train.pg_loss': '-5.4199e-05', 'Train.vf_loss': '1.1141', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 12/1869 [03:17<8:26:51, 16.38s/it][Train-Step][Epoch=1/10, Step=13] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '12.145', 'Train.acc': '0.175', 'Train.ncor': '0.7', 'Train.total': '4', 'Train.pg_loss': '5.0855e-06', 'Train.vf_loss': '1.9834', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 13/1869 [03:32<8:19:47, 16.16s/it][Train-Step][Epoch=1/10, Step=14] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.948', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '-0.00039892', 'Train.vf_loss': '2.5418', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 14/1869 [03:48<8:14:27, 15.99s/it][Train-Step][Epoch=1/10, Step=15] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.689', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '-0.00039756', 'Train.vf_loss': '2.56', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 15/1869 [04:05<8:21:02, 16.22s/it][Train-Step][Epoch=1/10, Step=16] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '12.561', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '0.00038245', 'Train.vf_loss': '2.639', 'Train.vf_expl_var': '-0.98409'}
+Train Loop:   1% 16/1869 [04:21<8:25:25, 16.37s/it][Train-Step][Epoch=1/10, Step=17] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.568', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '0.00059005', 'Train.vf_loss': '2.5934', 'Train.vf_expl_var': '-0.98409'}
+Train Loop:   1% 17/1869 [04:38<8:25:40, 16.38s/it][Train-Step][Epoch=1/10, Step=18] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.533', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '-1.5421e-05', 'Train.vf_loss': '2.4707', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 18/1869 [04:55<8:27:26, 16.45s/it][Train-Step][Epoch=1/10, Step=19] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.1634', 'Train.acc': '0.175', 'Train.ncor': '0.7', 'Train.total': '4', 'Train.pg_loss': '-0.00049349', 'Train.vf_loss': '1.7961', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 19/1869 [05:12<8:32:59, 16.64s/it][Train-Step][Epoch=1/10, Step=20] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '6.3242', 'Train.acc': '0.25', 'Train.ncor': '1', 'Train.total': '4', 'Train.pg_loss': '0.00014745', 'Train.vf_loss': '1.3272', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 20/1869 [05:29<8:36:54, 16.77s/it][Train-Step][Epoch=1/10, Step=21] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.1569', 'Train.acc': '0.125', 'Train.ncor': '0.5', 'Train.total': '4', 'Train.pg_loss': '0.00094745', 'Train.vf_loss': '1.4823', 'Train.vf_expl_var': '-0.97352'}
+Train Loop:   1% 21/1869 [05:45<8:33:20, 16.67s/it][Train-Step][Epoch=1/10, Step=22] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '9.324', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.0005194', 'Train.vf_loss': '1.8304', 'Train.vf_expl_var': '-0.97352'}
+Train Loop:   1% 22/1869 [06:02<8:36:51, 16.79s/it][Train-Step][Epoch=1/10, Step=23] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.93', 'Train.acc': '0.15', 'Train.ncor': '0.6', 'Train.total': '4', 'Train.pg_loss': '0.00011223', 'Train.vf_loss': '2.2186', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 23/1869 [06:18<8:29:57, 16.57s/it][Train-Step][Epoch=1/10, Step=24] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '12.295', 'Train.acc': '0.15', 'Train.ncor': '0.6', 'Train.total': '4', 'Train.pg_loss': '0.0017679', 'Train.vf_loss': '2.4873', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 24/1869 [06:35<8:32:15, 16.66s/it][Train-Step][Epoch=1/10, Step=25] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '12.316', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.0021935', 'Train.vf_loss': '2.4481', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 25/1869 [06:52<8:37:31, 16.84s/it][Train-Step][Epoch=1/10, Step=26] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '12.443', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00043445', 'Train.vf_loss': '2.4798', 'Train.vf_expl_var': '-1'}
+Train Loop:   1% 26/1869 [07:09<8:37:30, 16.85s/it][Train-Step][Epoch=1/10, Step=27] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '14.123', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00028259', 'Train.vf_loss': '2.711', 'Train.vf_expl_var': '-0.87235'}
+Train Loop:   1% 27/1869 [07:26<8:35:40, 16.80s/it][Train-Step][Epoch=1/10, Step=28] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '10.788', 'Train.acc': '0.05', 'Train.ncor': '0.2', 'Train.total': '4', 'Train.pg_loss': '-0.00081321', 'Train.vf_loss': '2.4129', 'Train.vf_expl_var': '-0.87235'}
+Train Loop:   1% 28/1869 [07:41<8:22:06, 16.36s/it][Train-Step][Epoch=1/10, Step=29] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '9.465', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '0.00069683', 'Train.vf_loss': '1.889', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 29/1869 [07:58<8:27:46, 16.56s/it][Train-Step][Epoch=1/10, Step=30] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.48', 'Train.acc': '0.075', 'Train.ncor': '0.3', 'Train.total': '4', 'Train.pg_loss': '0.0099119', 'Train.vf_loss': '2.1496', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 30/1869 [08:15<8:28:28, 16.59s/it][Train-Step][Epoch=1/10, Step=31] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '10.885', 'Train.acc': '0.05', 'Train.ncor': '0.2', 'Train.total': '4', 'Train.pg_loss': '0.0082724', 'Train.vf_loss': '2.2513', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 31/1869 [08:31<8:23:33, 16.44s/it][Train-Step][Epoch=1/10, Step=32] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '7.8868', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.00015359', 'Train.vf_loss': '1.7445', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 32/1869 [08:48<8:31:57, 16.72s/it][Train-Step][Epoch=1/10, Step=33] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.456', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.00049463', 'Train.vf_loss': '1.9891', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 33/1869 [09:04<8:25:13, 16.51s/it][Train-Step][Epoch=1/10, Step=34] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.884', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0011105', 'Train.vf_loss': '2.7057', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 34/1869 [09:21<8:23:26, 16.46s/it][Train-Step][Epoch=1/10, Step=35] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.712', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0010372', 'Train.vf_loss': '2.7672', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 35/1869 [09:37<8:23:35, 16.48s/it][Train-Step][Epoch=1/10, Step=36] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.901', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '-0.0007695', 'Train.vf_loss': '2.7499', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 36/1869 [09:54<8:22:40, 16.45s/it][Train-Step][Epoch=1/10, Step=37] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.143', 'Train.acc': '0.175', 'Train.ncor': '0.7', 'Train.total': '4', 'Train.pg_loss': '-0.00064018', 'Train.vf_loss': '2.4131', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 37/1869 [10:10<8:16:59, 16.28s/it][Train-Step][Epoch=1/10, Step=38] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.457', 'Train.acc': '0.175', 'Train.ncor': '0.7', 'Train.total': '4', 'Train.pg_loss': '0.0004172', 'Train.vf_loss': '2.1975', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 38/1869 [10:26<8:16:22, 16.27s/it][Train-Step][Epoch=1/10, Step=39] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.9259', 'Train.acc': '0.05', 'Train.ncor': '0.2', 'Train.total': '4', 'Train.pg_loss': '0.0012411', 'Train.vf_loss': '1.976', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 39/1869 [10:43<8:23:00, 16.49s/it][Train-Step][Epoch=1/10, Step=40] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.3826', 'Train.acc': '0.05', 'Train.ncor': '0.2', 'Train.total': '4', 'Train.pg_loss': '0.001177', 'Train.vf_loss': '1.6423', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 40/1869 [10:59<8:16:24, 16.28s/it][Train-Step][Epoch=1/10, Step=41] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.2625', 'Train.acc': '0.1', 'Train.ncor': '0.4', 'Train.total': '4', 'Train.pg_loss': '9.7863e-06', 'Train.vf_loss': '1.664', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 41/1869 [11:15<8:19:30, 16.40s/it][Train-Step][Epoch=1/10, Step=42] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.7838', 'Train.acc': '0.1', 'Train.ncor': '0.4', 'Train.total': '4', 'Train.pg_loss': '-0.00063233', 'Train.vf_loss': '1.7102', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 42/1869 [11:32<8:25:45, 16.61s/it][Train-Step][Epoch=1/10, Step=43] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.073', 'Train.acc': '0.05', 'Train.ncor': '0.2', 'Train.total': '4', 'Train.pg_loss': '-0.00090776', 'Train.vf_loss': '2.0684', 'Train.vf_expl_var': '-0.74881'}
+Train Loop:   2% 43/1869 [11:49<8:26:05, 16.63s/it][Train-Step][Epoch=1/10, Step=44] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.4', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '-0.00041472', 'Train.vf_loss': '2.2996', 'Train.vf_expl_var': '-0.74881'}
+Train Loop:   2% 44/1869 [12:07<8:36:27, 16.98s/it][Train-Step][Epoch=1/10, Step=45] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '13.327', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '7.547e-06', 'Train.vf_loss': '2.5227', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 45/1869 [12:24<8:37:37, 17.03s/it][Train-Step][Epoch=1/10, Step=46] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '11.615', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00015975', 'Train.vf_loss': '2.4729', 'Train.vf_expl_var': '-1'}
+Train Loop:   2% 46/1869 [12:41<8:35:09, 16.96s/it][Train-Step][Epoch=1/10, Step=47] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.4651', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.00021855', 'Train.vf_loss': '1.8425', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 47/1869 [12:57<8:30:48, 16.82s/it][Train-Step][Epoch=1/10, Step=48] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '9.8435', 'Train.acc': '0.025', 'Train.ncor': '0.1', 'Train.total': '4', 'Train.pg_loss': '0.00058263', 'Train.vf_loss': '1.8156', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 48/1869 [13:14<8:28:29, 16.75s/it][Train-Step][Epoch=1/10, Step=49] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.729', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00034082', 'Train.vf_loss': '1.8574', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 49/1869 [13:30<8:22:47, 16.58s/it][Train-Step][Epoch=1/10, Step=50] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.5459', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0020648', 'Train.vf_loss': '1.6706', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 50/1869 [13:47<8:22:35, 16.58s/it][Train-Step][Epoch=1/10, Step=51] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '7.482', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0010798', 'Train.vf_loss': '1.5662', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 51/1869 [14:03<8:18:19, 16.45s/it][Train-Step][Epoch=1/10, Step=52] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '8.4764', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0019373', 'Train.vf_loss': '1.5887', 'Train.vf_expl_var': '-0.86857'}
+Train Loop:   3% 52/1869 [14:20<8:26:54, 16.74s/it][Train-Step][Epoch=1/10, Step=53] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '6.4811', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0023176', 'Train.vf_loss': '1.4492', 'Train.vf_expl_var': '-0.6967'}
+Train Loop:   3% 53/1869 [14:38<8:35:21, 17.03s/it][Train-Step][Epoch=1/10, Step=54] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '6.5664', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0012445', 'Train.vf_loss': '1.2436', 'Train.vf_expl_var': '-0.82814'}
+Train Loop:   3% 54/1869 [14:55<8:32:43, 16.95s/it][Train-Step][Epoch=1/10, Step=55] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '4.8067', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0005277', 'Train.vf_loss': '1.0906', 'Train.vf_expl_var': '-0.88847'}
+Train Loop:   3% 55/1869 [15:12<8:32:23, 16.95s/it][Train-Step][Epoch=1/10, Step=56] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '4.8229', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00072974', 'Train.vf_loss': '0.90918', 'Train.vf_expl_var': '-0.88847'}
+Train Loop:   3% 56/1869 [15:28<8:29:02, 16.85s/it][Train-Step][Epoch=1/10, Step=57] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '4.0819', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0012435', 'Train.vf_loss': '0.87133', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 57/1869 [15:45<8:26:16, 16.76s/it][Train-Step][Epoch=1/10, Step=58] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '4.5637', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '1.1261e-05', 'Train.vf_loss': '0.85012', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 58/1869 [16:01<8:21:15, 16.61s/it][Train-Step][Epoch=1/10, Step=59] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '3.3402', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0013077', 'Train.vf_loss': '0.76037', 'Train.vf_expl_var': '-0.52246'}
+Train Loop:   3% 59/1869 [16:17<8:19:44, 16.57s/it][Train-Step][Epoch=1/10, Step=60] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '3.8279', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0012441', 'Train.vf_loss': '0.69457', 'Train.vf_expl_var': '-0.23886'}
+Train Loop:   3% 60/1869 [16:34<8:15:46, 16.44s/it][Train-Step][Epoch=1/10, Step=61] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '3.4468', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0008349', 'Train.vf_loss': '0.73208', 'Train.vf_expl_var': '-0.32392'}
+Train Loop:   3% 61/1869 [16:50<8:13:55, 16.39s/it][Train-Step][Epoch=1/10, Step=62] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '2.7546', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00032536', 'Train.vf_loss': '0.57761', 'Train.vf_expl_var': '-0.60752'}
+Train Loop:   3% 62/1869 [17:06<8:14:55, 16.43s/it][Train-Step][Epoch=1/10, Step=63] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '2.4187', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00045356', 'Train.vf_loss': '0.49088', 'Train.vf_expl_var': '-1'}
+Train Loop:   3% 63/1869 [17:23<8:13:26, 16.39s/it][Train-Step][Epoch=1/10, Step=64] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '2.2741', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00016764', 'Train.vf_loss': '0.45472', 'Train.vf_expl_var': '-0.30716'}
+Train Loop:   3% 64/1869 [17:40<8:17:08, 16.53s/it][Train-Step][Epoch=1/10, Step=65] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '2.396', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00073396', 'Train.vf_loss': '0.46536', 'Train.vf_expl_var': '0.16184'}
+Train Loop:   3% 65/1869 [17:57<8:21:13, 16.67s/it][Train-Step][Epoch=1/10, Step=66] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '2.1796', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00038943', 'Train.vf_loss': '0.45009', 'Train.vf_expl_var': '-0.44745'}
+Train Loop:   4% 66/1869 [18:11<7:59:59, 15.97s/it][Train-Step][Epoch=1/10, Step=67] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.9498', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.001079', 'Train.vf_loss': '0.39581', 'Train.vf_expl_var': '-0.19912'}
+Train Loop:   4% 67/1869 [18:28<8:07:30, 16.23s/it][Train-Step][Epoch=1/10, Step=68] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.9046', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.001483', 'Train.vf_loss': '0.37862', 'Train.vf_expl_var': '0.31984'}
+Train Loop:   4% 68/1869 [18:45<8:13:38, 16.45s/it][Train-Step][Epoch=1/10, Step=69] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.4725', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00066985', 'Train.vf_loss': '0.32088', 'Train.vf_expl_var': '0.2642'}
+Train Loop:   4% 69/1869 [19:01<8:11:19, 16.38s/it][Train-Step][Epoch=1/10, Step=70] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.2103', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00066275', 'Train.vf_loss': '0.24721', 'Train.vf_expl_var': '0.33464'}
+Train Loop:   4% 70/1869 [19:17<8:06:34, 16.23s/it][Train-Step][Epoch=1/10, Step=71] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.2661', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00045332', 'Train.vf_loss': '0.24464', 'Train.vf_expl_var': '0.50786'}
+Train Loop:   4% 71/1869 [19:34<8:13:22, 16.46s/it][Train-Step][Epoch=1/10, Step=72] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.1402', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00068009', 'Train.vf_loss': '0.23678', 'Train.vf_expl_var': '0.55254'}
+Train Loop:   4% 72/1869 [19:51<8:17:05, 16.60s/it][Train-Step][Epoch=1/10, Step=73] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.3246', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00068455', 'Train.vf_loss': '0.24688', 'Train.vf_expl_var': '0.54174'}
+Train Loop:   4% 73/1869 [20:06<8:08:20, 16.31s/it][Train-Step][Epoch=1/10, Step=74] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.4979', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00033281', 'Train.vf_loss': '0.29069', 'Train.vf_expl_var': '0.64527'}
+Train Loop:   4% 74/1869 [20:23<8:07:00, 16.28s/it][Train-Step][Epoch=1/10, Step=75] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.2048', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0011271', 'Train.vf_loss': '0.26001', 'Train.vf_expl_var': '0.70414'}
+Train Loop:   4% 75/1869 [20:39<8:09:37, 16.38s/it][Train-Step][Epoch=1/10, Step=76] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.96288', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00013195', 'Train.vf_loss': '0.19961', 'Train.vf_expl_var': '0.69691'}
+Train Loop:   4% 76/1869 [20:56<8:14:08, 16.54s/it][Train-Step][Epoch=1/10, Step=77] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '2.945', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.45866', 'Train.vf_loss': '0.5298', 'Train.vf_expl_var': '0.58941'}
+Train Loop:   4% 77/1869 [21:13<8:20:36, 16.76s/it][Train-Step][Epoch=1/10, Step=78] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.3846', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.45792', 'Train.vf_loss': '0.50779', 'Train.vf_expl_var': '0.52592'}
+Train Loop:   4% 78/1869 [21:30<8:21:29, 16.80s/it][Train-Step][Epoch=1/10, Step=79] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.76132', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00038317', 'Train.vf_loss': '0.14719', 'Train.vf_expl_var': '0.55186'}
+Train Loop:   4% 79/1869 [21:47<8:20:13, 16.77s/it][Train-Step][Epoch=1/10, Step=80] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.76598', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00063086', 'Train.vf_loss': '0.15251', 'Train.vf_expl_var': '0.60364'}
+Train Loop:   4% 80/1869 [22:03<8:15:58, 16.63s/it][Train-Step][Epoch=1/10, Step=81] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '3.396', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.55773', 'Train.vf_loss': '0.60504', 'Train.vf_expl_var': '0.66332'}
+Train Loop:   4% 81/1869 [22:19<8:10:29, 16.46s/it][Train-Step][Epoch=1/10, Step=82] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '1.6641', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.55817', 'Train.vf_loss': '0.61238', 'Train.vf_expl_var': '0.53224'}
+Train Loop:   4% 82/1869 [22:36<8:13:18, 16.56s/it][Train-Step][Epoch=1/10, Step=83] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.69469', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00033008', 'Train.vf_loss': '0.14675', 'Train.vf_expl_var': '0.51024'}
+Train Loop:   4% 83/1869 [22:53<8:13:24, 16.58s/it][Train-Step][Epoch=1/10, Step=84] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.56374', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00060958', 'Train.vf_loss': '0.11781', 'Train.vf_expl_var': '0.62671'}
+Train Loop:   4% 84/1869 [23:09<8:14:26, 16.62s/it][Train-Step][Epoch=1/10, Step=85] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.65203', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00020444', 'Train.vf_loss': '0.12162', 'Train.vf_expl_var': '0.61927'}
+Train Loop:   5% 85/1869 [23:27<8:20:57, 16.85s/it][Train-Step][Epoch=1/10, Step=86] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.64372', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0002586', 'Train.vf_loss': '0.13094', 'Train.vf_expl_var': '0.53725'}
+Train Loop:   5% 86/1869 [23:44<8:21:02, 16.86s/it][Train-Step][Epoch=1/10, Step=87] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.54546', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00085407', 'Train.vf_loss': '0.11401', 'Train.vf_expl_var': '0.57881'}
+Train Loop:   5% 87/1869 [24:01<8:21:34, 16.89s/it][Train-Step][Epoch=1/10, Step=88] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.43047', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00019411', 'Train.vf_loss': '0.091504', 'Train.vf_expl_var': '0.77161'}
+Train Loop:   5% 88/1869 [24:17<8:17:50, 16.77s/it][Train-Step][Epoch=1/10, Step=89] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.55698', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.016734', 'Train.vf_loss': '0.097187', 'Train.vf_expl_var': '0.7912'}
+Train Loop:   5% 89/1869 [24:33<8:08:45, 16.47s/it][Train-Step][Epoch=1/10, Step=90] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.47846', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.017136', 'Train.vf_loss': '0.10022', 'Train.vf_expl_var': '0.78932'}
+Train Loop:   5% 90/1869 [24:49<8:02:20, 16.27s/it][Train-Step][Epoch=1/10, Step=91] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.43898', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0012941', 'Train.vf_loss': '0.086871', 'Train.vf_expl_var': '0.79063'}
+Train Loop:   5% 91/1869 [25:06<8:07:04, 16.44s/it][Train-Step][Epoch=1/10, Step=92] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.5045', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00092054', 'Train.vf_loss': '0.096042', 'Train.vf_expl_var': '0.76784'}
+Train Loop:   5% 92/1869 [25:22<8:05:59, 16.41s/it][Train-Step][Epoch=1/10, Step=93] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.48829', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0003735', 'Train.vf_loss': '0.099637', 'Train.vf_expl_var': '0.76501'}
+Train Loop:   5% 93/1869 [25:39<8:12:21, 16.63s/it][Train-Step][Epoch=1/10, Step=94] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.43177', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00010981', 'Train.vf_loss': '0.088589', 'Train.vf_expl_var': '0.75645'}
+Train Loop:   5% 94/1869 [25:56<8:12:58, 16.66s/it][Train-Step][Epoch=1/10, Step=95] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.33383', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00016576', 'Train.vf_loss': '0.072016', 'Train.vf_expl_var': '0.78423'}
+Train Loop:   5% 95/1869 [26:13<8:15:25, 16.76s/it][Train-Step][Epoch=1/10, Step=96] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.39337', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00052571', 'Train.vf_loss': '0.072851', 'Train.vf_expl_var': '0.82428'}
+Train Loop:   5% 96/1869 [26:28<8:02:07, 16.32s/it][Train-Step][Epoch=1/10, Step=97] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.34222', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00028472', 'Train.vf_loss': '0.073724', 'Train.vf_expl_var': '0.83311'}
+Train Loop:   5% 97/1869 [26:44<8:00:34, 16.27s/it][Train-Step][Epoch=1/10, Step=98] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.30636', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0002769', 'Train.vf_loss': '0.061605', 'Train.vf_expl_var': '0.85574'}
+Train Loop:   5% 98/1869 [27:02<8:13:02, 16.70s/it][Train-Step][Epoch=1/10, Step=99] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.31937', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00063927', 'Train.vf_loss': '0.062359', 'Train.vf_expl_var': '0.84389'}
+Train Loop:   5% 99/1869 [27:20<8:20:43, 16.97s/it][Train-Step][Epoch=1/10, Step=100] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.30192', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0018792', 'Train.vf_loss': '0.062343', 'Train.vf_expl_var': '0.83726'}
+Train Loop:   5% 100/1869 [27:36<8:16:39, 16.85s/it][Train-Step][Epoch=1/10, Step=101] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.25249', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00057763', 'Train.vf_loss': '0.053726', 'Train.vf_expl_var': '0.85749'}
+Train Loop:   5% 101/1869 [27:54<8:22:41, 17.06s/it][Train-Step][Epoch=1/10, Step=102] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.31577', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00021737', 'Train.vf_loss': '0.058131', 'Train.vf_expl_var': '0.83539'}
+Train Loop:   5% 102/1869 [28:11<8:24:03, 17.12s/it][Train-Step][Epoch=1/10, Step=103] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.28401', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00069704', 'Train.vf_loss': '0.061423', 'Train.vf_expl_var': '0.81002'}
+Train Loop:   6% 103/1869 [28:28<8:25:38, 17.18s/it][Train-Step][Epoch=1/10, Step=104] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.27733', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-5.0168e-05', 'Train.vf_loss': '0.054577', 'Train.vf_expl_var': '0.80008'}
+Train Loop:   6% 104/1869 [28:46<8:31:16, 17.38s/it][Train-Step][Epoch=1/10, Step=105] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.25169', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00051366', 'Train.vf_loss': '0.051901', 'Train.vf_expl_var': '0.81668'}
+Train Loop:   6% 105/1869 [29:03<8:29:11, 17.32s/it][Train-Step][Epoch=1/10, Step=106] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.21294', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00028776', 'Train.vf_loss': '0.044589', 'Train.vf_expl_var': '0.8191'}
+Train Loop:   6% 106/1869 [29:20<8:20:49, 17.04s/it][Train-Step][Epoch=1/10, Step=107] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.22196', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.0001795', 'Train.vf_loss': '0.043217', 'Train.vf_expl_var': '0.81375'}
+Train Loop:   6% 107/1869 [29:37<8:20:10, 17.03s/it][Train-Step][Epoch=1/10, Step=108] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.20894', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00084186', 'Train.vf_loss': '0.043338', 'Train.vf_expl_var': '0.83024'}
+Train Loop:   6% 108/1869 [29:53<8:13:38, 16.82s/it][Train-Step][Epoch=1/10, Step=109] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.19507', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00085609', 'Train.vf_loss': '0.039767', 'Train.vf_expl_var': '0.83462'}
+Train Loop:   6% 109/1869 [30:10<8:14:21, 16.85s/it][Train-Step][Epoch=1/10, Step=110] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.18744', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.15436', 'Train.vf_loss': '0.067824', 'Train.vf_expl_var': '0.86248'}
+Train Loop:   6% 110/1869 [30:27<8:13:18, 16.83s/it][Train-Step][Epoch=1/10, Step=111] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.057821', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.28384', 'Train.vf_loss': '0.07576', 'Train.vf_expl_var': '0.86986'}
+Train Loop:   6% 111/1869 [30:43<8:12:30, 16.81s/it][Train-Step][Epoch=1/10, Step=112] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.13981', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.13063', 'Train.vf_loss': '0.045891', 'Train.vf_expl_var': '0.85642'}
+Train Loop:   6% 112/1869 [31:00<8:13:15, 16.84s/it][Train-Step][Epoch=1/10, Step=113] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.21097', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00022116', 'Train.vf_loss': '0.040094', 'Train.vf_expl_var': '0.7791'}
+Train Loop:   6% 113/1869 [31:17<8:12:01, 16.81s/it][Train-Step][Epoch=1/10, Step=114] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.19055', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00021709', 'Train.vf_loss': '0.039782', 'Train.vf_expl_var': '0.7668'}
+Train Loop:   6% 114/1869 [31:34<8:11:29, 16.80s/it][Train-Step][Epoch=1/10, Step=115] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.18566', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00015904', 'Train.vf_loss': '0.036641', 'Train.vf_expl_var': '0.83178'}
+Train Loop:   6% 115/1869 [31:50<8:04:08, 16.56s/it][Train-Step][Epoch=1/10, Step=116] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.16883', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00019384', 'Train.vf_loss': '0.034766', 'Train.vf_expl_var': '0.82267'}
+Train Loop:   6% 116/1869 [32:06<8:02:07, 16.50s/it][Train-Step][Epoch=1/10, Step=117] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.16361', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '6.592e-05', 'Train.vf_loss': '0.032744', 'Train.vf_expl_var': '0.8049'}
+Train Loop:   6% 117/1869 [32:23<8:03:20, 16.55s/it][Train-Step][Epoch=1/10, Step=118] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.14678', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00023623', 'Train.vf_loss': '0.030487', 'Train.vf_expl_var': '0.82923'}
+Train Loop:   6% 118/1869 [32:39<8:00:21, 16.46s/it][Train-Step][Epoch=1/10, Step=119] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.15276', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-7.7728e-05', 'Train.vf_loss': '0.02978', 'Train.vf_expl_var': '0.86229'}
+Train Loop:   6% 119/1869 [32:56<8:00:32, 16.48s/it][Train-Step][Epoch=1/10, Step=120] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.16512', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00089999', 'Train.vf_loss': '0.032554', 'Train.vf_expl_var': '0.8824'}
+Train Loop:   6% 120/1869 [33:12<7:54:22, 16.27s/it][Train-Step][Epoch=1/10, Step=121] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.15311', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0010419', 'Train.vf_loss': '0.031659', 'Train.vf_expl_var': '0.85525'}
+Train Loop:   6% 121/1869 [33:28<7:56:06, 16.34s/it][Train-Step][Epoch=1/10, Step=122] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.14114', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00089108', 'Train.vf_loss': '0.029032', 'Train.vf_expl_var': '0.8365'}
+Train Loop:   7% 122/1869 [33:45<8:00:18, 16.50s/it][Train-Step][Epoch=1/10, Step=123] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.13488', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00046766', 'Train.vf_loss': '0.027362', 'Train.vf_expl_var': '0.84302'}
+Train Loop:   7% 123/1869 [34:01<7:59:27, 16.48s/it][Train-Step][Epoch=1/10, Step=124] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '-0.022026', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.71026', 'Train.vf_loss': '0.14832', 'Train.vf_expl_var': '0.83'}
+Train Loop:   7% 124/1869 [34:18<8:04:42, 16.67s/it][Train-Step][Epoch=1/10, Step=125] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.085984', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.71078', 'Train.vf_loss': '0.14901', 'Train.vf_expl_var': '0.79693'}
+Train Loop:   7% 125/1869 [34:35<8:03:37, 16.64s/it][Train-Step][Epoch=1/10, Step=126] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.47784', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00029221', 'Train.vf_loss': '0.071731', 'Train.vf_expl_var': '0.76267'}
+Train Loop:   7% 126/1869 [34:53<8:14:44, 17.03s/it][Train-Step][Epoch=1/10, Step=127] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.28354', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.00075631', 'Train.vf_loss': '0.07662', 'Train.vf_expl_var': '0.76278'}
+Train Loop:   7% 127/1869 [35:10<8:16:47, 17.11s/it][Train-Step][Epoch=1/10, Step=128] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.15229', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '-0.0010168', 'Train.vf_loss': '0.032863', 'Train.vf_expl_var': '0.7517'}
+Train Loop:   7% 128/1869 [35:28<8:20:01, 17.23s/it][Train-Step][Epoch=1/10, Step=129] {'wandb': 'R3_qwen|gsm8k_vanilla_rl|cj4ua9kb', 'lr': '3e-07', 'Train.loss': '0.12874', 'Train.acc': '0', 'Train.ncor': '0', 'Train.total': '4', 'Train.pg_loss': '0.00045783', 'Train.vf_loss': '0.026584', 'Train.vf_expl_var': '0.7541'}
+Train Loop:   7% 129/1869 [35:44<8:12:38, 16.99s/it]--- Logging error ---
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/agent/server/api.py", line 711, in run
+    result = self._invoke_run(role)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/agent/server/api.py", line 870, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 1846 got signal: 15
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/logging/__init__.py", line 1083, in emit
+    msg = self.format(record)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/logging/__init__.py", line 927, in format
+    return fmt.format(record)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/_logging/_internal.py", line 859, in format
+    record.artifactprefix = ""
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 1846 got signal: 1
+Call stack:
+  File "/home/ubuntu/miniconda3/envs/R3_math/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 48, in main
+    args.func(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/launch.py", line 1159, in launch_command
+    deepspeed_launcher(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/launch.py", line 852, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 261, in launch_agent
+    result = agent.run()
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+    result = f(*args, **kwargs)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/agent/server/api.py", line 719, in run
+    logger.warning("Received %s death signal, shutting down workers", e.sigval)
+Message: 'Received %s death signal, shutting down workers'
+Arguments: (<Signals.SIGTERM: 15>,)
+W0524 07:01:09.981529 1846 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 1897 closing signal SIGTERM
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.7
+[93m [WARNING] [0m using untested triton version (3.3.0), only 1.0.0 is known to be compatible
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/R3_math/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 48, in main
+    args.func(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/launch.py", line 1159, in launch_command
+    deepspeed_launcher(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/accelerate/commands/launch.py", line 852, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 261, in launch_agent
+    result = agent.run()
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+    result = f(*args, **kwargs)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/agent/server/api.py", line 711, in run
+    result = self._invoke_run(role)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/agent/server/api.py", line 870, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/home/ubuntu/miniconda3/envs/R3_math/lib/python3.9/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 1846 got signal: 15
