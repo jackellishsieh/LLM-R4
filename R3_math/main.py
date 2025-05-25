@@ -730,6 +730,8 @@ def main(args):
     # if torch.distributed.get_rank() == 0:
     #     import ipdb; ipdb.set_trace()
 
+
+    
     if accelerator.is_main_process and args['wandb_log']:
         wandb.init(project=args['wandb_project'], entity=args['wandb_entity'], name=args['wandb_run_name'])
         wandb.config.update(args)
