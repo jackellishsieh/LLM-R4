@@ -30,7 +30,6 @@ from transformers import (
 
 import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
-from deepspeed import get_accelerator
 
 import wandb
 
@@ -283,10 +282,10 @@ def main():
     print("DDP: ", torch.distributed.is_initialized())
 
     if not torch.distributed.is_initialized():
-        device = torch.device(get_accelerator().device_name())
+        device = torch.device(deepspeed.get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
+        deepspeed.get_accelerator().set_device(args.local_rank)
+        device = torch.device(deepspeed.get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
@@ -473,6 +472,7 @@ def main():
                     },
                     step=step + epoch * len(train_dataloader),
                 )
+        model.tput_timer.update_epoch_count()
 
         # No evaluation during SFT... yet
         # # Evaluate on the validation set each epoch.
