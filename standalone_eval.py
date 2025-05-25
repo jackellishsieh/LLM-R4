@@ -5,8 +5,8 @@ import json
 from typing import List
 from tqdm import tqdm
 import torch
-from src.utils import timeout
-from datasets import Dataset
+from R3_math.src.utils import timeout
+from datasets import Dataset, load_from_disk
 from torch.utils.data import DataLoader
 from accelerate.utils import pad_across_processes
 import deepspeed
@@ -24,72 +24,88 @@ import util
 
 TIMEOUT = 2
 
-def prepare_eval_dataset(
-        eval_file: str, 
-        src_name: str, # e.g., 'gsm8k', 'svamp'
-        tokenizer,
-        engine: str = "nl", 
-        max_input_length: int = 700,
-        eval_batch_size: int = 8,
-        num_workers: int = 0,
-):
-    # Load raw dataset 
-    eval_dataset = Dataset.from_list(json.load(open(eval_file, 'r'))) if not eval_file.rstrip('/').endswith('_cache') else load_from_disk(eval_file))
 
-    src_name = eval_dataset['item_id'][0].split('_')[0]  # e.g., "nl", "python"
+def prepare_eval_dataset(
+    eval_file: str,
+    src_name: str,  # e.g., 'gsm8k', 'svamp'
+    tokenizer,
+    engine: str = "nl",
+    max_input_length: int = 700,
+    eval_batch_size: int = 8,
+    num_workers: int = 0,
+):
+    # Load raw dataset
+    eval_dataset = (
+        Dataset.from_list(json.load(open(eval_file, "r")))
+        if not eval_file.rstrip("/").endswith("_cache")
+        else load_from_disk(eval_file)
+    )
+
+    src_name = eval_dataset["item_id"][0].split("_")[0]  # e.g., "nl", "python"
     cot_info = util.prepare_cot_info(src_name)
-    instruction = cot_info['instruction']
-    cot_trigger = cot_info['cot_trigger']
-    answer_trigger = cot_info['answer_trigger']
+    instruction = cot_info["instruction"]
+    cot_trigger = cot_info["cot_trigger"]
+    answer_trigger = cot_info["answer_trigger"]
 
     def tokenize_fn(batch):
-        assert tokenizer.eos_token_id is not None, (tokenizer.eos_token_id, tokenizer.eos_token)
+        assert tokenizer.eos_token_id is not None, (
+            tokenizer.eos_token_id,
+            tokenizer.eos_token,
+        )
 
         new_batch = defaultdict(list)
         all_keys = list(batch.keys())
         for item_values in zip(*(batch[k] for k in all_keys)):
             item = {k: item_values[i] for i, k in enumerate(all_keys)}
-            item_id, question, answer_value, answer_cot = \
-                item['item_id'], \
-                item['question'], \
-                item['answer_value'], \
-                item.get('answer_cot', None), \
-            
+            item_id, question, answer_value, answer_cot = (
+                item["item_id"],
+                item["question"],
+                item["answer_value"],
+                item.get("answer_cot", None),
+            )
             # question = question.strip()
             if answer_value is not None:
                 answer_value = answer_value.strip()
 
             if answer_cot:
                 # answer_cot = answer_cot.strip()
-                if engine == 'nl' and src_name in ['gsm8k']:
-                    answer_cot += f'{answer_trigger} {answer_value}'
-                
-                input = f'{instruction}{question}'
-                output = f'{answer_cot}'
-                prefix_text = f'{instruction}{question}'
+                if engine == "nl" and src_name in ["gsm8k"]:
+                    answer_cot += f"{answer_trigger} {answer_value}"
 
-                if answer_cot.startswith('def'):
+                input = f"{instruction}{question}"
+                output = f"{answer_cot}"
+                prefix_text = f"{instruction}{question}"
+
+                if answer_cot.startswith("def"):
                     question_1 = question.replace("\n\n### Response:", "")
-                    if src_name in ['gsm8k', 'svamp'] and engine == 'python':
+                    if src_name in ["gsm8k", "svamp"] and engine == "python":
                         prefix_text += f'def solution():\n    """{question_1}"""\n'
 
             else:
-                input = f'{instruction}{question}{cot_trigger}'
-                output = f'{answer_cot}'
-                prefix_text = f'{instruction}{question}{cot_trigger}'
+                input = f"{instruction}{question}{cot_trigger}"
+                output = f"{answer_cot}"
+                prefix_text = f"{instruction}{question}{cot_trigger}"
 
-                if src_name in ['gsm8k', 'svamp'] and engine == 'python':
+                if src_name in ["gsm8k", "svamp"] and engine == "python":
                     prefix_text += f'def solution():\n    """{question}"""\n'
 
             input_encode = tokenizer(input, add_special_tokens=False)
             output_encode = tokenizer(output, add_special_tokens=False)
             prefix_encode = tokenizer(prefix_text, add_special_tokens=False)
 
-            input_ids = input_encode['input_ids'] + output_encode['input_ids'] + [tokenizer.eos_token_id]
-            labels = [-100] * len(input_encode['input_ids']) + output_encode['input_ids'] + [tokenizer.eos_token_id]
+            input_ids = (
+                input_encode["input_ids"]
+                + output_encode["input_ids"]
+                + [tokenizer.eos_token_id]
+            )
+            labels = (
+                [-100] * len(input_encode["input_ids"])
+                + output_encode["input_ids"]
+                + [tokenizer.eos_token_id]
+            )
             attention_mask = [1] * len(input_ids)
-            prefix = prefix_encode['input_ids']
-            prefix_attention_mask = prefix_encode['attention_mask']
+            prefix = prefix_encode["input_ids"]
+            prefix_attention_mask = prefix_encode["attention_mask"]
 
             # Truncation
             input_ids = input_ids[:max_input_length]
@@ -99,31 +115,37 @@ def prepare_eval_dataset(
             prefix_attention_mask = prefix_attention_mask[:max_input_length]
 
             ##
-            new_batch['input_ids'].append(input_ids)
-            new_batch['labels'].append(labels)
-            new_batch['attention_mask'].append(attention_mask)
-            new_batch['prefix'].append(prefix)
-            new_batch['prefix_attention_mask'].append(prefix_attention_mask)
+            new_batch["input_ids"].append(input_ids)
+            new_batch["labels"].append(labels)
+            new_batch["attention_mask"].append(attention_mask)
+            new_batch["prefix"].append(prefix)
+            new_batch["prefix_attention_mask"].append(prefix_attention_mask)
             ##
-            new_batch['item_id'].append(item_id)
-            new_batch['question'].append(question)
-            new_batch['prefix_text'].append(prefix_text)
-            new_batch['answer_cot'].append(answer_cot)
-            new_batch['answer_value'].append(answer_value)
+            new_batch["item_id"].append(item_id)
+            new_batch["question"].append(question)
+            new_batch["prefix_text"].append(prefix_text)
+            new_batch["answer_cot"].append(answer_cot)
+            new_batch["answer_value"].append(answer_value)
 
         return new_batch
 
     tokenized_eval_dataset = eval_dataset.map(
-            tokenize_fn, batched=True,
-            remove_columns=eval_dataset.column_names,
-            num_proc=None, load_from_cache_file=True, keep_in_memory=False,
-        )
+        tokenize_fn,
+        batched=True,
+        remove_columns=eval_dataset.column_names,
+        num_proc=None,
+        load_from_cache_file=True,
+        keep_in_memory=False,
+    )
 
-    eval_dataloader = DataLoader(tokenized_eval_dataset,
-                                 shuffle=False,
-                                 batch_size=eval_batch_size,
-                                num_workers=num_workers, pin_memory=True,
-                                collate_fn=partial(util.collate_fn, args=None, tokenizer=tokenizer))
+    eval_dataloader = DataLoader(
+        tokenized_eval_dataset,
+        shuffle=False,
+        batch_size=eval_batch_size,
+        num_workers=num_workers,
+        pin_memory=True,
+        collate_fn=partial(util.collate_fn, args=None, tokenizer=tokenizer),
+    )
 
     return (tokenized_eval_dataset, eval_dataloader), cot_info
 
@@ -288,15 +310,22 @@ def parse_args():
         "Otherwise, keep the default dropout configuration of the model.",
     )
 
-    parser.add_argument("--output_dir", type=str, default="output", help="The output directory where the model predictions and checkpoints will be written.")
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="output",
+        help="The output directory where the model predictions and checkpoints will be written.",
+    )
 
-    parser.add_argument("-eval_file", type=str, help="The input evaluation data file (a json file).")
+    parser.add_argument(
+        "-eval_file", type=str, help="The input evaluation data file (a json file)."
+    )
 
     parser.add_argument(
         "--max_input_length",
         type=int,
         default=700,
-        help="The maximum total input sequence length after tokenization."
+        help="The maximum total input sequence length after tokenization.",
     )
 
     parser.add_argument(
@@ -306,12 +335,18 @@ def parse_args():
         help="The maximum total sequence length for generation.",
     )
 
-    parser.add_argument("--engine", type=str, default="nl", help="The engine to use for generation. Options: nl, python")
+    parser.add_argument(
+        "--engine",
+        type=str,
+        default="nl",
+        help="The engine to use for generation. Options: nl, python",
+    )
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
     return args
+
 
 def main():
     args = parse_args()
@@ -322,7 +357,9 @@ def main():
         device = torch.device(deepspeed.get_accelerator().device_name())
     else:
         deepspeed.get_accelerator().set_device(args.local_rank)
-        device = torch.device(deepspeed.get_accelerator().device_name(), args.local_rank)
+        device = torch.device(
+            deepspeed.get_accelerator().device_name(), args.local_rank
+        )
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
@@ -360,9 +397,7 @@ def main():
 
     # Evaluate the model
     (tokenized_eval_dataset, eval_dataloader), cot_info = prepare_eval_dataset(
-        args.eval_file,
-        tokenizer=tokenizer,
-        max_input_length=args.max_input_length
+        args.eval_file, tokenizer=tokenizer, max_input_length=args.max_input_length
     )
 
     value_accuracy = evaluate_generation(
