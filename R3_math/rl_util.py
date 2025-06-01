@@ -15,7 +15,7 @@ def prepare_cot_info(src_name):
     Given a source name, prepare the instruction, COT trigger, answer trigger, and post-processing functions.
     This is a function only of the dataset
     """
-    assert src_name in ["gsm8k", "svamp"]
+    assert src_name in ["gsm8k", "svamp"], f"Source name ({src_name}) must be either 'gsm8k' or 'svamp'."
 
     # default for common datasets
     instruction = "Question:\n"

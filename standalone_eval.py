@@ -51,6 +51,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--src_name",
+        type=str,
+        help="Source name for the evaluation dataset (e.g., 'gsm8k', 'svamp').",
+    )
+
+    parser.add_argument(
         "--eval_file", type=str, help="The input evaluation data file (a json file)."
     )
 
@@ -70,9 +76,15 @@ def parse_args():
     parser.add_argument(
         "--dtype",
         type=str,
-        default="bf16",
-        choices=["fp16", "bf16"],
+        default="bfloat16",
+        choices=["float16", "float32", "bfloat16"],
         help="Training data type",
+    )
+
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="If set, will print additional information during evaluation.",
     )
 
     # parser = deepspeed.add_config_arguments(parser)
@@ -89,7 +101,7 @@ def main():
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.verbose:
-        print("Using device ", device)
+        print(f"\nUsing device {device}")
 
     # Initialize the tokenizer
     args.end_of_conversation_token = "<|endoftext|>"
@@ -109,14 +121,14 @@ def main():
     if args.verbose:
         print(f"Loaded {len(eval_examples)} evaluation examples from {args.eval_file}")
 
-    # Initialize the vLLM model
-    vllm_model = LLM(model=args.model_name_or_path,
-                     dtype=args.dtype,
-                     enable_prefix_caching=True,
-                     gpu_memory_utilization=0.5
-                )
-    if args.verbose:
-        print(f"Initialized vLLM model from {args.model_name_or_path}")
+    # # Initialize the vLLM model
+    # vllm_model = LLM(model=args.model_name_or_path,
+    #                  dtype=args.dtype,
+    #                  enable_prefix_caching=True,
+    #                  gpu_memory_utilization=0.5
+    #             )
+    # if args.verbose:
+    #     print(f"Initialized vLLM model from {args.model_name_or_path}")
 
     # Initialize the sampling parameters
     eval_sampling_params = generation.init_sampling_params(
@@ -129,9 +141,14 @@ def main():
         print("Initialized sampling parameters for evaluation")
 
     # Run evaluation on the model, saving the results to the output directory
-    cot_info = util.prepare_cot_info("nl")  # Assuming "nl" is the source name for the evaluation
+
+    cot_info = rl_util.prepare_cot_info(args.src_name)  # Assuming "nl" is the source name for the evaluation
+    if args.verbose:
+        print(f"Prepared COT info for source name {args.src_name}")
+
     results = generation.evaluate_vllm(
-        vllm_model,
+        # vllm_model,
+        None,
         eval_examples,
         eval_sampling_params,
         cot_info,
