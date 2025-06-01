@@ -133,7 +133,7 @@ def main():
     # Initialize the sampling parameters
     eval_sampling_params = generation.init_sampling_params(
         temperature=0.0,
-        top_k=0.0,
+        top_k=0,
         top_p=1.0,
         max_tokens=args.max_gen_length,
     )
