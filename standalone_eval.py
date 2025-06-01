@@ -14,7 +14,7 @@ from R3_others.dschat.utils.utils import (
 )
 from vllm import LLM, SamplingParams
 
-import R3_math.rl_util as rl_util
+import rl_util
 import generation
 
 TIMEOUT = 2
@@ -103,18 +103,18 @@ def main():
     if args.verbose:
         print(f"\nUsing device {device}")
 
-    # Initialize the tokenizer
-    args.end_of_conversation_token = "<|endoftext|>"
-    additional_special_tokens = (
-        args.end_of_conversation_token if args.add_eot_token else None
-    )
-    tokenizer = load_hf_tokenizer(
-        args.model_name_or_path,
-        fast_tokenizer=True,
-        add_special_tokens=additional_special_tokens,
-    )
-    if args.verbose:
-        print(f"Initialized tokenizer from {args.model_name_or_path}")
+    # # Initialize the tokenizer
+    # args.end_of_conversation_token = "<|endoftext|>"
+    # additional_special_tokens = (
+    #     args.end_of_conversation_token if args.add_eot_token else None
+    # )
+    # tokenizer = load_hf_tokenizer(
+    #     args.model_name_or_path,
+    #     fast_tokenizer=True,
+    #     add_special_tokens=additional_special_tokens,
+    # )
+    # if args.verbose:
+    #     print(f"Initialized tokenizer from {args.model_name_or_path}")
 
     # Read the eval file as a json list of dictionaries
     eval_examples: list[generation.EvalExample] = json.load(open(args.eval_file, "r"))
@@ -132,8 +132,8 @@ def main():
 
     # Initialize the sampling parameters
     eval_sampling_params = generation.init_sampling_params(
-        tokenizer,
         temperature=0.0,
+        top_k=0.0,
         top_p=1.0,
         max_tokens=args.max_gen_length,
     )
@@ -141,7 +141,6 @@ def main():
         print("Initialized sampling parameters for evaluation")
 
     # Run evaluation on the model, saving the results to the output directory
-
     cot_info = rl_util.prepare_cot_info(args.src_name)  # Assuming "nl" is the source name for the evaluation
     if args.verbose:
         print(f"Prepared COT info for source name {args.src_name}")
@@ -151,7 +150,6 @@ def main():
         eval_examples,
         eval_sampling_params,
         cot_info,
-        append_cot_trigger=True,    # no cot trigger in the eval example questions
         output_path=args.output_dir + "/eval_results.json",
         verbose=args.verbose,
     )
