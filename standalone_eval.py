@@ -55,13 +55,6 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--max_input_length",
-        type=int,
-        default=700,
-        help="The maximum total input sequence length after tokenization.",
-    )
-
-    parser.add_argument(
         "--max_gen_length",
         type=int,
         default=700,
