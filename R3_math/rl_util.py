@@ -1,4 +1,14 @@
 import torch
+from typing import Callable, TypedDict
+
+class CotInfo(TypedDict):
+    """A TypedDict to hold information related to Chain of Thought question processing and evaluation."""
+    instruction: str        # the prompt instruction, to be followed by the question
+    cot_trigger: str        # the reponse trigger, to be followed by the generated CoT
+    answer_trigger: str     # the answer trigger, to be followed by the final answer
+    post_process_final_answer_fn_mapper: dict[str, Callable[[str], float]]      # post-process final answers (by removing spaces and commas)
+    post_process_completed_question_answer_fn_mapper: dict[tuple[str, str], Callable[[str], float]] # post-process completed question answers (by extracting the answer from the generated CoT)
+    compare_answer_fn_mapper: dict[str, Callable[[float, float], bool]] # compare the extracted answer with the target answer
 
 def prepare_cot_info(src_name):
     """
