@@ -2,8 +2,8 @@ import torch
 from vllm import LLM, SamplingParams, RequestOutput
 from typing import Callable, TypedDict, Optional
 
-import R3_math.rl_util as rl_util
-
+import rl_util
+import constants
 
 class EvalExample(TypedDict):  # what is required at a minimum for each evaluation example
     item_id: str
@@ -21,7 +21,7 @@ class EvalOutput(TypedDict):  # what is returned for each evaluation example
     prompt: str                         # the prompt used for generation (i.e., instructions + question)
 
     prediction_cot: str                 # the generated COT as a string
-    prediction_value: float | None      # the predicted answer value, post-processed to a float. None if an answer could not be extracted from the generated CoT
+    prediction_value: Optional[float]   # the predicted answer value, post-processed to a float. None if an answer could not be extracted from the generated CoT
     is_correct: bool                    # whether the predicted answer is correct or not, by comparing it with the target answer
 
 
@@ -45,15 +45,14 @@ def init_vllm(
 
 
 def init_sampling_params(
-    tokenizer,
     temperature: float = 0.0,
     top_p: float = 1.0,
+    top_k: int = 0,
     max_tokens: int = 700,
 ) -> SamplingParams:
     """Initializes the sampling parameters for the vLLM model.
 
     Args:
-        tokenizer: The tokenizer to use for the model. Used to set the stop and pad tokens.
         temperature (float, optional): The temperature to use for sampling. Defaults to 0.0.
         top_p (float, optional): The top-p value to use for sampling. Defaults to 1.0.
         max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 700.
@@ -64,10 +63,10 @@ def init_sampling_params(
     return SamplingParams(
         temperature=temperature,
         top_p=top_p,
+        top_k=top_k,
         max_tokens=max_tokens,
-        stop_token_ids=[
-            tokenizer.eos_token_id
-        ],  # use the end of sentence token as the stop token. Should be excluded, as it is a special token
+        stop=[constants.r1_zero_instruction_stop],  # the end of the answer
+        include_stop_str_in_output=True,  # include the stop string in the output
     )
 
 
@@ -97,7 +96,7 @@ def evaluate_vllm(
     """
     # Construct the prompt for each example
     prompts = [cot_info["question_to_prompt"](example["question"]) for example in eval_examples]
-    
+
     # Sample completions, in the same order as the prompts
     outputs: list[RequestOutput] = vllm_model.generate(prompts, eval_sampling_params)
 
@@ -112,7 +111,7 @@ def evaluate_vllm(
         result["prompt"] = prompt
 
         # post-process the target answer to a float
-        result["target_value"] = cot_info["answer_to_value"][example["answer_value"]]
+        result["target_value"] = cot_info["answer_to_value"](example["answer_value"])
 
         # set the predicted CoT
         result["prediction_cot"] = output.outputs[0].text.strip()
