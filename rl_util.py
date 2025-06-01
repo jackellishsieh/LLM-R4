@@ -24,7 +24,7 @@ def deepseek_question_to_prompt(question: str) -> str:
     """
     Convert a question to a prompt using the DeepSeek r1-zero format.
     """
-    return constants.gsm8k_instruction.replace("{question}", question)
+    return constants.r1_zero_instruction.replace("{question}", question)
 
 
 def deepseek_cot_to_answer(cot: str) -> float:
