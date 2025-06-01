@@ -5,10 +5,24 @@ from typing import Callable, TypedDict, Optional
 import R3_math.rl_util as rl_util
 
 
-class EvalExample(TypedDict):  # what is required for each evaluation example
+class EvalExample(TypedDict):  # what is required at a minimum for each evaluation example
     item_id: str
     question: str
     answer_value: str
+    # additional keys can be added, e.g., difficulty, answer_cot, etc.
+
+class EvalOutput(TypedDict):  # what is returned for each evaluation example
+    item_id: str
+    question: str
+    answer_value: str                   # same values as EvalExample
+    # additional keys can be added, e.g., difficulty, answer_cot, etc.
+
+    target_value: float                 # the target answer value, post-processed to a float
+    prompt: str                         # the prompt used for generation (i.e., instructions + question)
+
+    prediction_cot: str                 # the generated COT as a string
+    prediction_value: float | None      # the predicted answer value, post-processed to a float. None if an answer could not be extracted from the generated CoT
+    is_correct: bool                    # whether the predicted answer is correct or not, by comparing it with the target answer
 
 
 def init_vllm(
@@ -62,10 +76,9 @@ def evaluate_vllm(
     eval_examples: list[EvalExample],
     eval_sampling_params: SamplingParams,
     cot_info: rl_util.CotInfo,
-    append_cot_trigger: bool,
     output_path: Optional[str] = None,
     verbose: bool = False,
-) -> list[dict]:
+) -> list[EvalOutput]:
     """Given a vllm model and a list of evaluation examples, this function generates rationales from the vllm and grades them according to cot_info.
     Returns a list of dictionaries, containing the original evaluation example, the generated rationale, the generated answers, and the feedback.
 
@@ -74,38 +87,32 @@ def evaluate_vllm(
         eval_examples (list[EvalExample]): A list of evaluation examples, each containing at minimum an item_id, question, and answer_value.
         eval_sampling_params (SamplingParams): The sampling parameters to use for generation.
         cot_info (rl_util.CotInfo): CoT info necessary for producing prompts and grading answers against ground truth
-        append_cot_trigger (bool): Whether to append the CoT trigger to the question-filled prompt.
 
         output_path (str | Optional[str]): _description_. Defaults to None.
         verbose (bool, optional): _description_. Defaults to False.
 
     Returns:
-        list[dict]: A list of dictionaries, each containing the original evaluation example, the generated rationale, the generated answers, and the feedback.
+        list[EvalOutput]: A list of dictionaries, each containing the original evaluation example, the generated rationale, the generated answers, and the feedback.
+            See EvalOutput for the structure of each dictionary.
     """
     # Construct the prompt for each example
-    prompts = [
-        f"{cot_info['instruction']}{example['question']}"
-        + (cot_info["cot_trigger"] if append_cot_trigger else "")
-        for example in eval_examples
-    ]  # append the question and appending the CoT trigger if required
-
+    prompts = [cot_info["question_to_prompt"](example["question"]) for example in eval_examples]
+    
     # Sample completions, in the same order as the prompts
     outputs: list[RequestOutput] = vllm_model.generate(prompts, eval_sampling_params)
 
     results = []
     for example, prompt, output in zip(eval_examples, prompts, outputs):
-        # extract the source name from the item_id.
-        src_name = example["item_id"].split("_")[0]
-        engine = "nl"  # default engine is natural language
+        # Unused for now, since no code and CoT info has been reworked for our purposes
+        # src_name = example["item_id"].split("_")[0]           # extract the source name from the item_id.
+        # engine = "nl"  # default engine is natural language
 
         # copy the example and the prompt
         result = example.copy()
         result["prompt"] = prompt
 
         # post-process the target answer to a float
-        result["target_value"] = cot_info["post_process_final_answer_fn_mapper"][
-            src_name
-        ](example["answer_value"])
+        result["target_value"] = cot_info["answer_to_value"][example["answer_value"]]
 
         # set the predicted CoT
         result["prediction_cot"] = output.outputs[0].text.strip()
@@ -113,17 +120,15 @@ def evaluate_vllm(
         # post-process the predicted question answer to a float
         try:
             # with timeout(seconds=TIMEOUT):    # timeout is irrelevant, as we are not running any code
-            result["prediction_value"] = cot_info[
-                "post_process_completed_question_answer_fn_mapper"
-            ][(engine, src_name)](result["prediction_cot"])
+            result["prediction_value"] = cot_info["answer_to_value"](
+                cot_info["cot_to_answer"](result["prediction_cot"])
+            )
         except:
             result["prediction_value"] = None
 
         # compare the predicted answer with the target answer
         result["is_correct"] = (
-            cot_info["compare_answer_fn_mapper"][src_name](
-                result["prediction_value"], result["target_value"]
-            )
+            cot_info["compare_values"](result["prediction_value"], result["target_value"])
             if result["prediction_value"] is not None
             else False
         )
