@@ -93,12 +93,10 @@ def parse_args():
     return args
 
 
-def main():
+def main(args):
     """
     Main function to evaluate a model on a json dataset.
     """
-    args = parse_args()
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.verbose:
         print(f"\nUsing device {device}")
@@ -150,7 +148,7 @@ def main():
         eval_examples,
         eval_sampling_params,
         cot_info,
-        output_path=args.output_dir + "/eval_results.json",
+        output_path=args.output_dir + "/base_model_eval.json",
         verbose=args.verbose,
     )
     if args.verbose:
@@ -160,4 +158,17 @@ def main():
     return results
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    # main(args)
+
+    input_path = args.output_dir + "/base_model_eval.json"
+    # Read as a json list of dictionaries
+    with open(input_path, "r") as f:
+        eval_outputs = json.load(f)
+    if args.verbose:
+        print(f"Loaded evaluation results from {input_path}")
+
+    # Compute metrics
+    eval_metrics = generation.compute_eval_metrics(eval_outputs)
+    if args.verbose:
+        print(f"Computed metrics: {json.dumps(eval_metrics, indent=4)}")

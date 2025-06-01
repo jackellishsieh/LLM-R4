@@ -1,6 +1,14 @@
+"""
+This file provides functions for
+- initializing a vLLM model and sampling parameters for generation
+- generating and grading answers (to be used with either rollout or evaluation)
+- summarizing evaluation results
+"""
+
 import torch
 from vllm import LLM, SamplingParams, RequestOutput
-from typing import Callable, TypedDict, Optional
+from typing import TypedDict, Optional
+import pandas as pd
 
 import rl_util
 import constants
@@ -100,46 +108,68 @@ def evaluate_vllm(
     # Sample completions, in the same order as the prompts
     outputs: list[RequestOutput] = vllm_model.generate(prompts, eval_sampling_params)
 
-    results = []
+    eval_outputs: list[EvalOutput] = []
     for example, prompt, output in zip(eval_examples, prompts, outputs):
         # Unused for now, since no code and CoT info has been reworked for our purposes
         # src_name = example["item_id"].split("_")[0]           # extract the source name from the item_id.
         # engine = "nl"  # default engine is natural language
 
         # copy the example and the prompt
-        result = example.copy()
-        result["prompt"] = prompt
+        eval_output = example.copy()
+        eval_output["prompt"] = prompt
 
         # post-process the target answer to a float
-        result["target_value"] = cot_info["answer_to_value"](example["answer_value"])
+        eval_output["target_value"] = cot_info["answer_to_value"](example["answer_value"])
 
         # set the predicted CoT
-        result["prediction_cot"] = output.outputs[0].text.strip()
+        eval_output["prediction_cot"] = output.outputs[0].text.strip()
 
         # post-process the predicted question answer to a float
         try:
             # with timeout(seconds=TIMEOUT):    # timeout is irrelevant, as we are not running any code
-            result["prediction_value"] = cot_info["answer_to_value"](
-                cot_info["cot_to_answer"](result["prediction_cot"])
+            eval_output["prediction_value"] = cot_info["answer_to_value"](
+                cot_info["cot_to_answer"](eval_output["prediction_cot"])
             )
         except:
-            result["prediction_value"] = None
+            eval_output["prediction_value"] = None
 
         # compare the predicted answer with the target answer
-        result["is_correct"] = (
-            cot_info["compare_values"](result["prediction_value"], result["target_value"])
-            if result["prediction_value"] is not None
+        eval_output["is_correct"] = (
+            cot_info["compare_values"](eval_output["prediction_value"], eval_output["target_value"])
+            if eval_output["prediction_value"] is not None
             else False
         )
 
-        results.append(result)
+        eval_outputs.append(eval_output)
 
     # Save the results to a json file if output_path is provided
     if output_path is not None:
         import json
 
         with open(output_path, "w") as f:
-            json.dump(results, f, indent=4)
+            json.dump(eval_outputs, f, indent=4)
 
     # Return the results
-    return results
+    return eval_outputs
+
+
+def compute_eval_metrics(eval_outputs: list[EvalOutput]) -> dict:
+    """Given a list of evaluation outputs, this function computes the evaluation metrics.
+
+    Args:
+        eval_outputs (list[EvalOutput]): A list of evaluation outputs, each containing the original evaluation example, the generated rationale, the generated answers, and the feedback.
+
+    Returns:
+        dict: A dictionary containing the evaluation metrics.
+    """
+
+    # For simplicity, convert the list of dictionaries to a DataFrame
+    df = pd.DataFrame(eval_outputs)
+
+    return {
+        "total_examples": int(len(df)),
+        "num_correct_answer": int(df["is_correct"].sum()),
+        "answer_accuracy": float(df["is_correct"].mean()),
+        "num_correct_format": int(df["prediction_value"].notnull().sum()),
+        "format_accuracy": float(df["prediction_value"].notnull().mean()),
+    }
