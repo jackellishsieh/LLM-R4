@@ -20,7 +20,7 @@ from R3_others.dschat.utils.utils import (
     load_hf_tokenizer,
 )
 
-import util
+import R3_math.rl_util as rl_util
 
 TIMEOUT = 2
 
@@ -41,7 +41,7 @@ def prepare_eval_dataset(
     )
 
     src_name = eval_dataset["item_id"][0].split("_")[0]  # e.g., "nl", "python"
-    cot_info = util.prepare_cot_info(src_name)
+    cot_info = rl_util.prepare_cot_info(src_name)
     instruction = cot_info["instruction"]
     cot_trigger = cot_info["cot_trigger"]
     answer_trigger = cot_info["answer_trigger"]
@@ -143,7 +143,7 @@ def prepare_eval_dataset(
         batch_size=eval_batch_size,
         num_workers=num_workers,
         pin_memory=True,
-        collate_fn=partial(util.collate_fn, tokenizer=tokenizer),
+        collate_fn=partial(rl_util.collate_fn, tokenizer=tokenizer),
     )
 
     return (tokenized_eval_dataset, eval_dataloader), cot_info

@@ -41,8 +41,7 @@ import wandb
 import shutil
 from prettytable import PrettyTable
 
-import util
-
+import rl_util
 
 def logprobs_from_logits(
     logits: torch.Tensor, labels: torch.Tensor, gather: bool = True
@@ -127,7 +126,7 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
         src_name = raw_dataset["train"]["item_id"][0].split("_")[
             0
         ]  # e.g., gsm8k_0, gsm8k_1, gsm8k_2, ...
-        cot_info = util.prepare_cot_info(src_name)
+        cot_info = rl_util.prepare_cot_info(src_name)
         instruction = cot_info["instruction"]
         cot_trigger = cot_info["cot_trigger"]
         answer_trigger = cot_info["answer_trigger"]
@@ -254,7 +253,7 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
         batch_size=args["batch_size"],
         num_workers=args["num_workers"],
         pin_memory=True,
-        collate_fn=partial(util.collate_fn, args=args, tokenizer=tokenizer),
+        collate_fn=partial(rl_util.collate_fn, tokenizer=tokenizer),
     )
 
     test_dataloader = DataLoader(
@@ -263,7 +262,7 @@ def prepare_datasets_and_data_loaders(args, tokenizer):
         batch_size=args["eval_batch_size"],
         num_workers=args["num_workers"],
         pin_memory=True,
-        collate_fn=partial(util.collate_fn, args=args, tokenizer=tokenizer),
+        collate_fn=partial(rl_util.collate_fn, tokenizer=tokenizer),
     )
 
     return (
