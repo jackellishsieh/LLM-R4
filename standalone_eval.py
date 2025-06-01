@@ -46,7 +46,7 @@ def prepare_eval_dataset(
     cot_trigger = cot_info["cot_trigger"]
     answer_trigger = cot_info["answer_trigger"]
 
-    def tokenize_fn(batch):
+    def tokenize_fn(batch): # batches are dicts of lists
         assert tokenizer.eos_token_id is not None, (
             tokenizer.eos_token_id,
             tokenizer.eos_token,
@@ -54,8 +54,8 @@ def prepare_eval_dataset(
 
         new_batch = defaultdict(list)
         all_keys = list(batch.keys())
-        for item_values in zip(*(batch[k] for k in all_keys)):
-            item = {k: item_values[i] for i, k in enumerate(all_keys)}
+        for item_values in zip(*(batch[k] for k in all_keys)):              # yields ordered list of values for each item in the batch
+            item = {k: item_values[i] for i, k in enumerate(all_keys)}      # constructs the individual item, across fields
             item_id, question, answer_value, answer_cot = (
                 item["item_id"],
                 item["question"],
@@ -120,7 +120,7 @@ def prepare_eval_dataset(
             new_batch["prefix"].append(prefix)
             new_batch["prefix_attention_mask"].append(prefix_attention_mask)
             ##
-            new_batch["item_id"].append(item_id)
+            new_batch["G_id"].append(item_id)
             new_batch["question"].append(question)
             new_batch["prefix_text"].append(prefix_text)
             new_batch["answer_cot"].append(answer_cot)
