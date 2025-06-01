@@ -121,14 +121,14 @@ def main():
     if args.verbose:
         print(f"Loaded {len(eval_examples)} evaluation examples from {args.eval_file}")
 
-    # # Initialize the vLLM model
-    # vllm_model = LLM(model=args.model_name_or_path,
-    #                  dtype=args.dtype,
-    #                  enable_prefix_caching=True,
-    #                  gpu_memory_utilization=0.5
-    #             )
-    # if args.verbose:
-    #     print(f"Initialized vLLM model from {args.model_name_or_path}")
+    # Initialize the vLLM model
+    vllm_model = LLM(model=args.model_name_or_path,
+                     dtype=args.dtype,
+                     enable_prefix_caching=True,
+                     gpu_memory_utilization=0.5
+                )
+    if args.verbose:
+        print(f"Initialized vLLM model from {args.model_name_or_path}")
 
     # Initialize the sampling parameters
     eval_sampling_params = generation.init_sampling_params(
@@ -147,8 +147,7 @@ def main():
         print(f"Prepared COT info for source name {args.src_name}")
 
     results = generation.evaluate_vllm(
-        # vllm_model,
-        None,
+        vllm_model,
         eval_examples,
         eval_sampling_params,
         cot_info,
@@ -160,7 +159,7 @@ def main():
         print(f"Evaluation completed. Results saved to {args.output_dir}/eval_results.json")
 
     # # Implement accuracy calculation
-    return
+    return results
 
 if __name__ == "__main__":
     main()

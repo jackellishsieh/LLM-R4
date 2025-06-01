@@ -1,5 +1,6 @@
 import torch
 from typing import Callable, TypedDict
+import constants
 
 class CotInfo(TypedDict):
     """A TypedDict to hold information related to Chain of Thought question processing and evaluation."""
@@ -24,7 +25,9 @@ def prepare_cot_info(src_name):
 
     if src_name in ["gsm8k", "svamp"]:
         # over-write for the simple datasets
-        instruction = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n"
+        # instruction = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n"
+        instruction = constants.gsm8k_instruction
+        
         cot_trigger = "\n\n### Response:"
         answer_trigger = "\n####"
 

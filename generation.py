@@ -93,16 +93,17 @@ def evaluate_vllm(
     outputs: list[RequestOutput] = vllm_model.generate(prompts, eval_sampling_params)
 
     results = []
-    for example, output in zip(eval_examples, outputs):
-        src_name = example["item_id"].split("_")[
-            0
-        ]  # extract the source name from the item_id
+    for example, prompt, output in zip(eval_examples, prompts, outputs):
+        # extract the source name from the item_id.
+        src_name = example["item_id"].split("_")[0]
         engine = "nl"  # default engine is natural language
 
+        # copy the example and the prompt
         result = example.copy()
+        result["prompt"] = prompt
 
         # post-process the target answer to a float
-        result["target_value"] = cot_info["post_process_final_value_fn_mapper"][
+        result["target_value"] = cot_info["post_process_final_answer_fn_mapper"][
             src_name
         ](example["answer_value"])
 
@@ -113,14 +114,14 @@ def evaluate_vllm(
         try:
             # with timeout(seconds=TIMEOUT):    # timeout is irrelevant, as we are not running any code
             result["prediction_value"] = cot_info[
-                "post_process_completed_question_value_fn_mapper"
+                "post_process_completed_question_answer_fn_mapper"
             ][(engine, src_name)](result["prediction_cot"])
         except:
             result["prediction_value"] = None
 
         # compare the predicted answer with the target answer
         result["is_correct"] = (
-            cot_info["compare_value_fn_mapper"][src_name](
+            cot_info["compare_answer_fn_mapper"][src_name](
                 result["prediction_value"], result["target_value"]
             )
             if result["prediction_value"] is not None
