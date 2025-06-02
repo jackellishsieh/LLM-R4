@@ -79,7 +79,7 @@ def parse_args():
         "--dtype",
         type=str,
         default="bfloat16",
-        choices=["float16", "float32", "bfloat16"],
+        choices=["float16", "float32", "bfloat16", "auto"],
         help="Training data type",
     )
 
@@ -155,7 +155,7 @@ def get_eval_outputs(args) -> list[generation.EvalExample]:
         verbose=args.verbose,
     )
     if args.verbose:
-        print(f"Evaluation completed. Results saved to {args.output_dir}/eval_results.json")
+        print(f"Evaluation completed. Results saved to {args.output_path}")
     return results
 
 if __name__ == "__main__":
