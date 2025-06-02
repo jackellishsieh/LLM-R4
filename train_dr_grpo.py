@@ -6,7 +6,7 @@ from dr_grpo_trainer import DrGRPOTrainer
 from trl import GRPOConfig
 import rl_util
 import json
-from datasets import Dataset
+from datasets import Dataset, concatenate_datasets
 
 TRAINING_FILES = [
     "R3_math/data/gsm8k_original_train.json",
@@ -46,7 +46,7 @@ def train_dr_grpo(training_files=TRAINING_FILES):
         return total_rewards
     
     # load training datasets
-    dataset = Dataset.from_list([])  # initialize empty huggingface dataset
+    datasets = Dataset.from_list([])  # initialize empty huggingface dataset
     for file in training_files:
         # load the dataset, assuming it has a 'question', and 'answer_value' field
         with open(file, 'r') as f:
@@ -58,7 +58,7 @@ def train_dr_grpo(training_files=TRAINING_FILES):
             item.pop("answer_cot", None)  # remove answer_cot if it exists
         
         # convert to huggingface dataset
-        dataset = Dataset.concatenate_datasets([dataset, Dataset.from_list(raw_data)])
+        datasets = concatenate_datasets([datasets, Dataset.from_list(raw_data)])
         
     
     # configure training
@@ -67,6 +67,7 @@ def train_dr_grpo(training_files=TRAINING_FILES):
         use_vllm=True,
         vllm_mode="colocate",  # maybe "server", depending on setup
         per_device_train_batch_size=4,
+        gradient_accumulation_steps=16, 
         num_generations=64,  # n responses per prompt
         bf16=True,
         gradient_checkpointing=True,
@@ -81,7 +82,7 @@ def train_dr_grpo(training_files=TRAINING_FILES):
         model="Qwen/Qwen2.5-0.5B-Instruct",
         args=training_args,
         reward_funcs=reward_function,
-        train_dataset=dataset,
+        train_dataset=datasets,
     )
     
     trainer.train()
