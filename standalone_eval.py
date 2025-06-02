@@ -69,12 +69,11 @@ def parse_args():
         help="The random seed for generation.",
     )
 
-
-    parser.add_argument(
-        "--add_eot_token",
-        action="store_true",
-        help="Add <|endoftext|> as additional special token to tokenizer",
-    )
+    # parser.add_argument(
+    #     "--add_eot_token",
+    #     action="store_true",
+    #     help="Add <|endoftext|> as additional special token to tokenizer",
+    # )
 
     parser.add_argument(
         "--dtype",
