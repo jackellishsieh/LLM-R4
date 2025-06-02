@@ -73,6 +73,13 @@ def prepare_cot_info(src_name):
         "compare_values": gsm8k_compare_answer,
     }
 
+def check_proper_format(completion):
+    """Check if completion has proper <think></think> and <answer></answer> formatting"""
+    # Check for both think tags and answer tags
+    has_think_tags = bool(re.search(r'<think>.*?</think>', completion, re.DOTALL))
+    has_answer_tags = bool(re.search(r'<answer>.*?</answer>', completion, re.DOTALL))
+    
+    return has_think_tags and has_answer_tags
 
 def collate_fn(batch, tokenizer):
     """
