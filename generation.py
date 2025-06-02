@@ -57,6 +57,7 @@ def init_sampling_params(
     top_p: float = 1.0,
     top_k: int = 0,
     max_tokens: int = 700,
+    seed: int = 42,
 ) -> SamplingParams:
     """Initializes the sampling parameters for the vLLM model.
 
@@ -75,6 +76,7 @@ def init_sampling_params(
         max_tokens=max_tokens,
         stop=[constants.r1_zero_instruction_stop],  # the end of the answer
         include_stop_str_in_output=True,  # include the stop string in the output
+        seed=seed
     )
 
 

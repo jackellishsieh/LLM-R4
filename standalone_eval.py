@@ -1,17 +1,12 @@
+"""
+This file is a script for evaluating a model on a json dataset using vLLM.
+It does not use any training or deepspeed, and is meant to be run standalone simply to evaluate a finish model on a final evaluation set.
+"""
+
 import argparse
 import json
 import torch
-from R3_math.src.utils import timeout
-from torch.utils.data import DataLoader
-
-from transformers import (
-    AutoModelForCausalLM,
-)
-from R3_others.dschat.utils.ds_utils import get_train_ds_config
-from R3_others.dschat.utils.model.model_utils import create_hf_model
-from R3_others.dschat.utils.utils import (
-    load_hf_tokenizer,
-)
+# from R3_math.src.utils import timeout
 from vllm import LLM, SamplingParams
 
 import rl_util
@@ -68,6 +63,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="The random seed for generation.",
+    )
+
+
+    parser.add_argument(
         "--add_eot_token",
         action="store_true",
         help="Add <|endoftext|> as additional special token to tokenizer",
@@ -93,9 +96,9 @@ def parse_args():
     return args
 
 
-def main(args):
+def get_eval_outputs(args) -> list[generation.EvalExample]:
     """
-    Main function to evaluate a model on a json dataset.
+    Returns a list of evaluation results for the given model and dataset.
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.verbose:
@@ -134,6 +137,7 @@ def main(args):
         top_k=0,
         top_p=1.0,
         max_tokens=args.max_gen_length,
+        seed=args.seed,
     )
     if args.verbose:
         print("Initialized sampling parameters for evaluation")
@@ -153,20 +157,11 @@ def main(args):
     )
     if args.verbose:
         print(f"Evaluation completed. Results saved to {args.output_dir}/eval_results.json")
-
-    # # Implement accuracy calculation
     return results
 
 if __name__ == "__main__":
     args = parse_args()
-    # main(args)
-
-    input_path = args.output_dir + "/base_model_eval.json"
-    # Read as a json list of dictionaries
-    with open(input_path, "r") as f:
-        eval_outputs = json.load(f)
-    if args.verbose:
-        print(f"Loaded evaluation results from {input_path}")
+    eval_outputs = get_eval_outputs(args)
 
     # Compute metrics
     eval_metrics = generation.compute_eval_metrics(eval_outputs)
