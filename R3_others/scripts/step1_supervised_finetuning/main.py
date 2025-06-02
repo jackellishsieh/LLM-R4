@@ -269,6 +269,13 @@ def parse_args():
         help="Weights & Biases run name to use for logging.",
     )
 
+    # Optional verbosity
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print verbose information during training.",
+    )
+
     # Add deepspeed config arguments
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
@@ -276,37 +283,7 @@ def parse_args():
     return args
 
 
-def main():
-    args = parse_args()
-
-    print("DDP: ", torch.distributed.is_initialized())
-
-    if not torch.distributed.is_initialized():
-        device = torch.device(deepspeed.get_accelerator().device_name())
-    else:
-        deepspeed.get_accelerator().set_device(args.local_rank)
-        device = torch.device(deepspeed.get_accelerator().device_name(), args.local_rank)
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        # torch.distributed.init_process_group(backend='nccl')
-        deepspeed.init_distributed()
-
-    print("Device = ", device)
-
-    # Initialize wandb if enabled
-    if args.wandb_log:
-        print("Project = ", args.wandb_project)
-        print("Entity = ", args.wandb_entity)
-        print("Run name = ", args.wandb_run_name)
-
-        wandb.init(
-            project=args.wandb_project,
-            entity=args.wandb_entity,
-            name=args.wandb_run_name,
-        )
-        wandb.config.update(args)
-
-    args.global_rank = (torch.distributed.get_rank() if torch.distributed.is_initialized() else 0)
-
+def initialize_ds_config(args):
     ds_config = get_train_ds_config(
         offload=args.offload,
         # gradient_clipping="auto",
@@ -323,47 +300,9 @@ def main():
         * args.gradient_accumulation_steps
     )  # overall batch size, across gradient accumulation steps and devices
 
-    # If passed along, set the training seed now.
-    set_random_seed(args.seed)
+    return ds_config
 
-    if torch.distributed.is_initialized():
-        torch.distributed.barrier()
-
-    # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    args.end_of_conversation_token = "<|endoftext|>"
-    additional_special_tokens = (
-        args.end_of_conversation_token if args.add_eot_token else None
-    )
-    tokenizer = load_hf_tokenizer(
-        args.model_name_or_path,
-        fast_tokenizer=True,
-        add_special_tokens=additional_special_tokens,
-    )
-
-    model = create_hf_model(
-        AutoModelForCausalLM,
-        args.model_name_or_path,
-        tokenizer,
-        ds_config,
-        dropout=args.dropout,
-    )
-
-    if args.compute_fp32_loss:
-        print_rank_0(
-            f"Using model {model.__class__.__name__} with loss in fp32",
-            args.global_rank,
-        )
-        causal_lm_model_to_fp32_loss(model)
-
-    if args.lora_dim > 0:
-        model = convert_linear_layer_to_lora(
-            model, args.lora_module_name, args.lora_dim
-        )
-        if args.only_optimize_lora:
-            model = only_optimize_lora_parameters(model)
-            model = make_model_gradient_checkpointing_compatible(model)
-
-    # Prepare the data
+def initialize_train_dataloader(args, tokenizer):
     train_phase = 1
     train_dataset, eval_dataset = create_prompt_dataset(
         args.local_rank,
@@ -381,38 +320,56 @@ def main():
     print("train length:{}".format(len(train_dataset)))
 
     # Create the dataloaders
-    if not torch.distributed.is_initialized():
-        train_sampler = RandomSampler(train_dataset)
-        # eval_sampler = SequentialSampler(eval_dataset)
-    else:
-        train_sampler = DistributedSampler(train_dataset)
-        # eval_sampler = DistributedSampler(eval_dataset)
-
+    train_sampler = DistributedSampler(train_dataset) if torch.distributed.is_initialized() else RandomSampler(train_dataset)
     train_dataloader = DataLoader(
         train_dataset,
         collate_fn=customized_data_collator,
         sampler=train_sampler,
         batch_size=args.per_device_train_batch_size,
     )
-    # eval_dataloader = DataLoader(
-    #     eval_dataset,
-    #     collate_fn=customized_data_collator,
-    #     sampler=eval_sampler,
-    #     batch_size=args.per_device_eval_batch_size,
-    # )
+
+    return train_dataloader
+
+def initialize_model(args, tokenizer, ds_config, num_train_examples: int):
+    # Import the model
+    model = create_hf_model(
+        AutoModelForCausalLM,
+        args.model_name_or_path,
+        tokenizer,
+        ds_config,
+        dropout=args.dropout,
+    )
+
+    # Set the model to the correct dtype
+    if args.compute_fp32_loss:
+        print_rank_0(
+            f"Using model {model.__class__.__name__} with loss in fp32",
+            args.global_rank,
+        )
+        causal_lm_model_to_fp32_loss(model)
+
+    # Set lora model
+    if args.lora_dim > 0:
+        model = convert_linear_layer_to_lora(
+            model, args.lora_module_name, args.lora_dim
+        )
+        if args.only_optimize_lora:
+            model = only_optimize_lora_parameters(model)
+            model = make_model_gradient_checkpointing_compatible(model)
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         model, args.weight_decay, args.lora_learning_rate
     )
 
+    # Initialize the model, optimizer, and learning rate scheduler
     AdamOptimizer = DeepSpeedCPUAdam if args.offload else FusedAdam
     optimizer = AdamOptimizer(
         optimizer_grouped_parameters, lr=args.learning_rate, betas=(0.9, 0.95)
     )
 
     num_update_steps_per_epoch = math.ceil(
-        len(train_dataloader) / args.gradient_accumulation_steps
+        num_train_examples / args.gradient_accumulation_steps
     )
     lr_scheduler = get_scheduler(
         name=args.lr_scheduler_type,
@@ -432,7 +389,102 @@ def main():
 
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
+    
+    return model, optimizer, lr_scheduler
 
+def main():
+    args = parse_args()
+
+    # If passed along, set the training seed now.
+    set_random_seed(args.seed)
+
+    '''
+    Initialize the device and backend
+    '''
+    print("DDP: ", torch.distributed.is_initialized())
+
+    if not torch.distributed.is_initialized():
+        device = torch.device(deepspeed.get_accelerator().device_name())
+    else:
+        deepspeed.get_accelerator().set_device(args.local_rank)
+        device = torch.device(deepspeed.get_accelerator().device_name(), args.local_rank)
+        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        # torch.distributed.init_process_group(backend='nccl')
+        deepspeed.init_distributed()
+    args.global_rank = (torch.distributed.get_rank() if torch.distributed.is_initialized() else 0)
+    if args.verbose:
+        print("Device = ", device)
+
+
+    '''
+    Initialize the wandb logging
+    '''
+    if args.wandb_log:
+        print("Project = ", args.wandb_project)
+        print("Entity = ", args.wandb_entity)
+        print("Run name = ", args.wandb_run_name)
+
+        wandb.init(
+            project=args.wandb_project,
+            entity=args.wandb_entity,
+            name=args.wandb_run_name,
+        )
+        wandb.config.update(args)
+        if args.verbose:
+            print("Initialized wandb logging")
+
+
+    '''
+    Initialize the DeepSpeed configuration
+    '''
+    ds_config = initialize_ds_config(args)
+    if args.verbose:
+        print("Initialized DeepSpeed config: ", ds_config)
+    
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()
+
+
+    '''
+    Load the tokenizer
+    '''
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = (
+        args.end_of_conversation_token if args.add_eot_token else None
+    )
+    tokenizer = load_hf_tokenizer(
+        args.model_name_or_path,
+        fast_tokenizer=True,
+        add_special_tokens=additional_special_tokens,
+    )
+
+
+    '''
+    Initialize the training dataloader
+    '''
+    train_dataloader = initialize_train_dataloader(args, tokenizer)
+    if args.verbose:
+        print(
+            f"Initialized training dataloader with {len(train_dataloader)} batches, "
+            f"batch size {args.per_device_train_batch_size}, "
+            f"total batch size {ds_config['train_batch_size']}"
+        )
+    
+
+    '''
+    Initialize the model, optimizer, and learning rate scheduler
+    '''
+    model, optimizer, lr_scheduler = initialize_model(
+        args,
+        tokenizer,
+        ds_config,
+        num_train_examples=len(train_dataloader),  # will be set later
+    )
+
+
+    '''
+    SFT Train loop
+    '''
     for epoch in range(args.num_train_epochs):
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
