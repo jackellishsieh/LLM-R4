@@ -54,7 +54,7 @@ def train_dr_grpo(training_files=TRAINING_FILES):
 
         for item in raw_data:
             # replace "question" with "prompt" in each item
-            item["prompt"] = rl_util.deepseek_question_to_prompt(item.pop("question"))
+            item["prompt"] = rl_util.r1_zero_question_to_prompt(item.pop("question"))
             item.pop("answer_cot", None)  # remove answer_cot if it exists
         
         # convert to huggingface dataset

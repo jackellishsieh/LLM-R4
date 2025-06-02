@@ -20,14 +20,14 @@ class CotInfo(TypedDict):
     # compare_answer_fn_mapper: dict[str, Callable[[float, float], bool]] # compare the extracted answer with the target answer
 
 
-def deepseek_question_to_prompt(question: str) -> str:
+def r1_zero_question_to_prompt(question: str) -> str:
     """
     Convert a question to a prompt using the DeepSeek r1-zero format.
     """
     return constants.r1_zero_instruction.replace("{question}", question)
 
 
-def deepseek_cot_to_answer(cot: str) -> float:
+def r1_zero_cot_to_answer(cot: str) -> float:
     """
     Convert a generated Chain of Thought (CoT) to a final answer using the DeepSeek r1-zero format.
     """
@@ -54,7 +54,7 @@ def gsm8k_compare_answer(
     """
     return abs(predicted_value - target_value) <= tolerance
 
-def deepseek_answer_cot_to_string(answer_cot: str, target_answer: str) -> str:
+def r1_zero_answer_cot_to_string(answer_cot: str, target_answer: str) -> str:
     """
     Convert a golden CoT and target answer to a string, formatted using the DeepSeek r1-zero format.
     """
@@ -73,8 +73,8 @@ def prepare_cot_info(src_name):
     assert src_name == "gsm8k", f"Source name ({src_name}) must be 'gsm8k' for now."
 
     return {
-        "question_to_prompt": deepseek_question_to_prompt,
-        "cot_to_answer": deepseek_cot_to_answer,
+        "question_to_prompt": r1_zero_question_to_prompt,
+        "cot_to_answer": r1_zero_cot_to_answer,
         "answer_to_value": gsm8k_answer_to_value,
         "compare_values": gsm8k_compare_answer,
     }
