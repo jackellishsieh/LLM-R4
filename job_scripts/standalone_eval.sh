@@ -1,9 +1,10 @@
 #!/bin/bash
 
 model_name_or_path="Qwen/Qwen2-0.5B-Instruct"
-output_dir="${HOME}/LLM-R4/outputs"
 src_name="gsm8k"
-eval_file="${HOME}/LLM-R4/R3_others/data/gsm8k_cot/gsm8k_test.json"
+eval_path="${HOME}/LLM-R4/R3_others/data/gsm8k_cot/gsm8k_test.json"
+output_path="${HOME}/LLM-R4/eval_results/base_model_eval.json"
+
 
 mkdir -p $output_dir
 
@@ -15,9 +16,9 @@ mkdir -p $output_dir
 # and we keep total_batch_size=256
 python standalone_eval.py \
     --model_name_or_path $model_name_or_path\
-    --eval_file $eval_file \
     --src_name $src_name \
-    --output_dir $output_dir \
+    --eval_path $eval_path \
+    --output_path $output_path \
     --max_gen_length 700 \
     --add_eot_token \
     --verbose

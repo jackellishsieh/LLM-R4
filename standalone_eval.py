@@ -39,10 +39,10 @@ def parse_args():
     # )
 
     parser.add_argument(
-        "--output_dir",
+        "--output_path",
         type=str,
         default="output",
-        help="The output directory where the model predictions and checkpoints will be written.",
+        help="The output path where the model predictions will be written.",
     )
 
     parser.add_argument(
@@ -52,7 +52,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--eval_file", type=str, help="The input evaluation data file (a json file)."
+        "--eval_path", type=str, help="The input evaluation data file (a json file)."
     )
 
     parser.add_argument(
@@ -118,9 +118,9 @@ def get_eval_outputs(args) -> list[generation.EvalExample]:
     #     print(f"Initialized tokenizer from {args.model_name_or_path}")
 
     # Read the eval file as a json list of dictionaries
-    eval_examples: list[generation.EvalExample] = json.load(open(args.eval_file, "r"))
+    eval_examples: list[generation.EvalExample] = json.load(open(args.eval_path, "r"))
     if args.verbose:
-        print(f"Loaded {len(eval_examples)} evaluation examples from {args.eval_file}")
+        print(f"Loaded {len(eval_examples)} evaluation examples from {args.eval_path}")
 
     # Initialize the vLLM model
     vllm_model = LLM(model=args.model_name_or_path,
@@ -152,7 +152,7 @@ def get_eval_outputs(args) -> list[generation.EvalExample]:
         eval_examples,
         eval_sampling_params,
         cot_info,
-        output_path=args.output_dir + "/base_model_eval.json",
+        output_path=args.output_path,
         verbose=args.verbose,
     )
     if args.verbose:
