@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
+import json
 import sys
 
 sys.path.append(".")
 sys.path.append("..")
 sys.path.append("../..")
+sys.path.append("../../..") # for generation
 sys.path.append(
     "/opt/tiger/xzh-agent/DeepSpeedExamples-master/applications/DeepSpeed-Chat/dschat"
 )
@@ -31,8 +33,8 @@ from transformers import (
 import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 
+from vllm import LLM, SamplingParams
 import wandb
-
 
 from dschat.utils.data.data_utils import create_prompt_dataset, customized_data_collator
 from dschat.utils.utils import (
@@ -57,6 +59,9 @@ from dschat.utils.perf import print_throughput
 
 from dschat.utils.data.data_utils import PromptDataset
 torch.serialization.add_safe_globals([PromptDataset])
+
+import generation
+import rl_util
 
 
 def parse_args():
@@ -161,7 +166,7 @@ def parse_args():
         "--output_dir", type=str, default=None, help="Where to store the model."
     )
     parser.add_argument(
-        "--seed", type=int, default=1234, help="A seed for reproducible training."
+        "--seed", type=int, default=42, help="A seed for reproducible training."
     )
     parser.add_argument(
         "--local_rank",
@@ -244,6 +249,32 @@ def parse_args():
     parser.add_argument(
         "--print_loss", action="store_true", help="Prints loss at each step."
     )
+
+
+    # Add the evaluation parameters
+    parser.add_argument(
+        "--eval_input_path",
+        type=str,
+        default="R3_others/data/r1_zero_instruction_eval.json",
+        help="Path to the evaluation dataset. This should be a json file with the evaluation examples.",
+    )
+    parser.add_argument(
+        "--eval_output_path",
+        type=str,
+        help="Filepath to save the evaluation results."
+    )
+    parser.add_argument(
+        "--src_name",
+        type=str,
+        help="Source name for the evaluation dataset (e.g., 'gsm8k', 'svamp').",
+    )
+    parser.add_argument(
+        "--max_gen_length",
+        type=int,
+        default=700,
+        help="The maximum total sequence length for generation.",
+    )
+
 
     # Add wandb arguments wandb_log, wand_entity, wandb_project, wandb_name
     parser.add_argument(
@@ -392,6 +423,39 @@ def initialize_model(args, tokenizer, ds_config, num_train_examples: int):
     
     return model, optimizer, lr_scheduler
 
+def initialize_vllm(args):
+    # # Initialize the vLLM model
+    # dtype = {
+    #     "fp16": "float16",
+    #     "bf16": "bfloat16",
+    #     "fp32": "float32",
+    # }[args.dtype]   # convert dtype string to vLLM dtype
+
+    # vllm_model = LLM(model=args.model_name_or_path,
+    #                  dtype=dtype,
+    #                  enable_prefix_caching=True,
+    #                  gpu_memory_utilization=0.5
+    #             )
+    # if args.verbose:
+    #     print(f"Initialized vLLM model from {args.model_name_or_path}")
+    vllm_model = None
+
+    # Initialize the sampling parameters
+    eval_sampling_params = generation.init_sampling_params(
+        temperature=0.0,
+        top_k=0,
+        top_p=1.0,
+        max_tokens=args.max_gen_length,
+        seed=args.seed,
+    )
+    if args.verbose:
+        print("Initialized sampling parameters for evaluation")
+
+    # Run evaluation on the model, saving the results to the output directory
+    cot_info = rl_util.prepare_cot_info(args.src_name)  # Assuming "nl" is the source name for the evaluation
+    
+    return vllm_model, eval_sampling_params, cot_info
+
 def main():
     args = parse_args()
 
@@ -483,9 +547,78 @@ def main():
 
 
     '''
+    Load eval examples
+    '''
+    eval_examples: list[generation.EvalExample] = json.load(open(args.eval_input_path, "r"))
+    if args.verbose:
+        print(f"Loaded {len(eval_examples)} evaluation examples from {args.eval_input_path}")
+
+
+    '''
+    Initialize the vLLM model and sampling parameters
+    '''
+    vllm_model, eval_sampling_params, cot_info = initialize_vllm(args)
+    if args.verbose:
+        print(f"Prepared COT info for source name {args.src_name}")
+
+    '''
+    This function will be called at the start of each epoch to evaluate the model (+ a final at the end of training)    
+    '''
+    def eval_subroutine(model):
+        # Save the model to the output directory
+        if args.output_dir is not None and args.global_rank == 0:
+            model = convert_lora_to_linear_layer(model)
+            save_hf_format(model, tokenizer, args)
+            if args.verbose:
+                print(f"Saved the model to the output directory {args.output_dir}")
+
+        # Load a vllm model for evaluation with those saved weights
+        dtype = {
+            "fp16": "float16",
+            "bf16": "bfloat16",
+            "fp32": "float32",
+        }[args.dtype]   # convert dtype string to vLLM dtype
+
+        vllm_model = LLM(model=args.output_dir,
+                        dtype=dtype,
+                        enable_prefix_caching=True,
+                        gpu_memory_utilization=0.5
+                    )
+        if args.verbose:
+            print(f"Initialized vLLM model from {args.output_dir}")
+    
+        # Run evaluation on the vLLM model
+        eval_outputs = generation.evaluate_vllm(
+            vllm_model,
+            eval_examples,
+            eval_sampling_params,
+            cot_info,
+            output_path=args.eval_output_path,
+            verbose=args.verbose,
+        )
+        eval_metrics = generation.compute_eval_metrics(eval_outputs)
+        if args.verbose:
+            print(f"Evaluation completed. Results: {json.dumps(eval_metrics, indent=4)}")
+        
+        if args.wandb_log:
+            wandb.log(
+                {
+                    "eval/answer_accuracy": eval_metrics["answer_accuracy"],
+                    "eval/format_accuracy": eval_metrics["format_accuracy"],
+                    "eval/epoch": epoch,
+                }
+            )
+        return
+
+    '''
     SFT Train loop
     '''
     for epoch in range(args.num_train_epochs):
+        '''
+        Evaluate the vllm model on the eval examples
+        '''
+        eval_subroutine(model)
+
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
             args.global_rank,
@@ -524,28 +657,14 @@ def main():
                     },
                     step=step + epoch * len(train_dataloader),
                 )
+
         model.tput_timer.update_epoch_count()
 
-        # No evaluation during SFT... yet
-        # # Evaluate on the validation set each epoch.
-        # print_rank_0(
-        #     f"***** Evaluating perplexity, Epoch {epoch+1}/{args.num_train_epochs} *****",
-        #     args.global_rank,
-        # )
-        # perplexity, eval_loss = evaluation(model, eval_dataloader)
+    # Final evaluation after training
+    print_rank_0("Final evaluation after training ...", args.global_rank)
+    eval_subroutine(model)
 
-        # # Log
-        # print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
-        # model.tput_timer.update_epoch_count()
-        # if args.wandb_log:
-        #     wandb.log(
-        #         {
-        #             "eval/loss": eval_loss,
-        #             "eval/perplexity": perplexity,
-        #             "eval/epoch": epoch,
-        #         }
-        #     )
-
+    # Save the final model
     if args.output_dir is not None:
         print_rank_0("saving the final model ...", args.global_rank)
         model = convert_lora_to_linear_layer(model)
@@ -559,8 +678,6 @@ def main():
             save_zero_three_model(
                 model, args.global_rank, args.output_dir, zero_stage=args.zero_stage
             )
-
-
 
 if __name__ == "__main__":
     main()
