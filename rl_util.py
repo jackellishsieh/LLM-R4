@@ -46,13 +46,19 @@ def gsm8k_answer_to_value(answer: str) -> float:
     return float(answer.replace(",", "").strip())
 
 def gsm8k_compare_answer(
-    extracted_ans: float, target_answer: float, tolerance=1e-2
+    predicted_value: float, target_value: float, tolerance=1e-2
 ) -> bool:
     """
     Compare the extracted answer with the target answer for the GSM8K dataset.
     Returns True if the absolute difference is within a small tolerance, otherwise False.
     """
-    return abs(extracted_ans - target_answer) <= tolerance
+    return abs(predicted_value - target_value) <= tolerance
+
+def deepseek_answer_cot_to_string(answer_cot: str, target_answer: str) -> str:
+    """
+    Convert a golden CoT and target answer to a string, formatted using the DeepSeek r1-zero format.
+    """
+    return f"{answer_cot}</think> <answer> {target_answer} </answer>"
 
 
 def prepare_cot_info(src_name):
