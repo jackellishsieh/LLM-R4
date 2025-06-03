@@ -19,11 +19,11 @@ python train_dr_grpo.py --config configs/{new_exp_name}.yaml
 
 import os
 import wandb
-import torch
 import json
 import yaml
 from datasets import Dataset, concatenate_datasets
 
+from transformers import TrainerCallback
 from trl import GRPOConfig
 from dr_grpo_trainer import DrGRPOTrainer
 import rl_util
@@ -116,6 +116,12 @@ def load_datasets(config):
     
     return datasets
 
+class DatasetCallback(TrainerCallback):
+    def on_epoch_begin(self, args, state, control, **kwargs):
+        # At the start of each epoch, update the train_dataset
+        kwargs['train_dataset'].step()
+
+
 def create_training_args(config):
     """Create GRPOConfig from configuration"""
     exp_config = config["experiment"]
@@ -128,15 +134,25 @@ def create_training_args(config):
         logging_steps=train_config["logging_steps"],
         use_vllm=train_config["use_vllm"],
         vllm_mode=train_config["vllm_mode"],
-        per_device_train_batch_size=train_config["per_device_train_batch_size"],
+
+        # gen-evaluation parameters
+        generation_batch_size=train_config["generation_batch_size"],
+        steps_per_generation=train_config["steps_per_generation"],
         gradient_accumulation_steps=train_config["gradient_accumulation_steps"],
         num_generations=train_config["num_generations"],
+
+        # training configs
         bf16=train_config["bf16"],
         gradient_checkpointing=train_config["gradient_checkpointing"],
+        loss_type=train_config["loss_type"],
         scale_rewards=train_config["scale_rewards"],
+
+        # sampling parameters
         temperature=train_config["temperature"],
         top_p=train_config["top_p"],
         max_completion_length=train_config["max_completion_length"],
+
+        # meta
         save_steps=train_config["save_steps"],
         save_total_limit=train_config["save_total_limit"],
         eval_steps=train_config["eval_steps"],
@@ -175,6 +191,7 @@ def train_dr_grpo(config):
         args=training_args,
         reward_funcs=reward_function,
         train_dataset=datasets,
+        callbacks=[DatasetCallback()],
     )
     
     print("Training")

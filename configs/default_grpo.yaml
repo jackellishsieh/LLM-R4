@@ -15,23 +15,31 @@ data:
     - "R3_math/data/gsm8k_original_train.json"
   dataset_name: "gsm8k"
   dataset_size: null # null for full dataset, or specify number for subset
-  shuffle: false
+  shuffle: true
 
 training:
   # main training parameters
-  per_device_train_batch_size: 8
-  gradient_accumulation_steps: 2
-  num_generations: 16
+  # per_device_train_batch_size: 8
+  # gradient_accumulation_steps: 2
+  # num_generations: 16
 
-  # grpo generation parameters
+  # gen-evaluation parameters
+  generation_batch_siz: 256 # how many samples to generate at once
+  steps_per_generation: 2 # number of steps to take before generating new data
+  gradient_accumulation_steps: 128  # how to accumulate gradients
+  num_generations: 8    # size of each group
+
+  # generation parameters
   temperature: 0.8
   top_p: 0.9
-  max_completion_length: 256
+  max_completion_length: 256  # monitor if doesn't finish
 
   # training configs
   bf16: true
-  gradient_checkpointing: true
-  scale_rewards: false
+  gradient_checkpointing: true  # use gradient checkpointing to save memory
+  loss_type: "dr_grpo"
+  scale_rewards: false          # dr. grpo does not scale rewards by std
+  reward_weights: null
 
   # logging and saving configs
   logging_steps: 10
@@ -41,13 +49,12 @@ training:
 
   # vLLM configs
   use_vllm: true
-  vllm_mode: "colocate" # or "server", but "server" was slow
-  vllm_gpu_memory_utilization: 0.4
+  vllm_mode: "colocate"       # "colocate" occurs on same device
+  vllm_gpu_memory_utilization: 0.5 # how much GPU memory to use for vLLM
 
 reward:
   format_reward: 0.2
   correctness_reward: 1.0
-  components: ["format", "correctness"]
 
 distributed:
   rank: 0
