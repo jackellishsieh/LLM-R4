@@ -11,10 +11,10 @@ model:
   use_local_files_only: false
 
 data:
+  dataset_name: "gsm8k"
   train:
     files:
       - "R3_math/data/gsm8k_original_train.json"
-    dataset_name: "gsm8k"
     dataset_size: null # null for full dataset, or specify number for subset
     shuffle: true
 
@@ -32,9 +32,9 @@ training:
   # num_generations: 16
 
   # gen-evaluation parameters
-  generation_batch_siz: 256 # how many samples to generate at once
-  steps_per_generation: 2 # number of steps to take before generating new data
-  gradient_accumulation_steps: 128  # how to accumulate gradients
+  # generation_batch_size: 16 # how many samples to generate at once
+  steps_per_generation: 32 # number of steps to take before generating new data
+  gradient_accumulation_steps: 16  # how to accumulate gradients
   num_generations: 8    # size of each group
 
   # generation parameters

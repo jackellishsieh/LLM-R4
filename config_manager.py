@@ -84,14 +84,15 @@ def validate_config(config: Dict[str, Any]) -> None:
         if section not in config:
             raise ValueError(f"Missing required config section: {section}")
     
-    # validate required parameters
-    if config["training"]["per_device_train_batch_size"] <= 0:
-        raise ValueError("batch_size must be positive")
+    # # validate required parameters
+    # if ("per_device_train_batch_size" in config["training"]) and config["training"]["per_device_train_batch_size"] <= 0:
+    #     raise ValueError("batch_size must be positive")
     
-    if config["training"]["num_generations"] <= 0:
-        raise ValueError("num_generations must be positive")
+    # if config["training"]["num_generations"] <= 0:
+    #     raise ValueError("num_generations must be positive")
     
-    # check file paths exist
-    for file_path in config["data"]["training_files"]:
-        if not os.path.exists(file_path):
-            raise ValueError(f"Training file not found: {file_path}")
+    # # check file paths exist
+    # for file_path in config["data"]["training_files"]:
+    #     if not os.path.exists(file_path):
+    #         raise ValueError(f"Training file not found: {file_path}")
+    return

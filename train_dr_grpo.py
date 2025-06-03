@@ -100,7 +100,7 @@ def load_datasets(config, split: Literal["train", "eval"]):
     data_config = config["data"][split]
     datasets = Dataset.from_list([])
     
-    for file in data_config["train_files"]:
+    for file in data_config["files"]:
         with open(file, 'r') as f:
             raw_data = json.load(f)
 
@@ -116,7 +116,7 @@ def load_datasets(config, split: Literal["train", "eval"]):
     
     # set shuffle
     if data_config["shuffle"]:
-        datasets = datasets.shuffle(seed=config["seed"])
+        datasets = datasets.shuffle(seed=config["experiment"]["seed"])
 
     return datasets
 
@@ -124,7 +124,8 @@ def load_datasets(config, split: Literal["train", "eval"]):
 class DatasetCallback(TrainerCallback):
     def on_epoch_begin(self, args, state, control, **kwargs):
         # At the start of each epoch, update the train_dataset
-        kwargs['train_dataset'].step()
+        # kwargs['train_dataset'].step()
+        return
 
 
 def create_training_args(config):
@@ -141,10 +142,10 @@ def create_training_args(config):
         # vllm parameters
         use_vllm=train_config["use_vllm"],
         vllm_mode=train_config["vllm_mode"],
-        vllm_gpu_memory_utilization=config["vllm_gpu_memory_utilization"],
+        vllm_gpu_memory_utilization=train_config["vllm_gpu_memory_utilization"],
 
         # gen-evaluation parameters
-        generation_batch_size=train_config["generation_batch_size"],
+        # generation_batch_size=train_config["generation_batch_size"],
         steps_per_generation=train_config["steps_per_generation"],
         gradient_accumulation_steps=train_config["gradient_accumulation_steps"],
         num_generations=train_config["num_generations"],
