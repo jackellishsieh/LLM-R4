@@ -1,0 +1,61 @@
+# GRPO training config file
+# GRPO Training Configuration
+experiment:
+  name: "dr-grpo-qwen-gsm8k"
+  project: "dr-grpo-qwen"
+  output_dir: "dr_grpo_qwen_0.5b"
+  seed: 42
+
+model:
+  name_or_path: "dillonkn/qwen2.5-0.5b-reasoning-sft"
+  use_local_files_only: false
+
+data:
+  training_files:
+    - "R3_math/data/gsm8k_original_train.json"
+  dataset_name: "gsm8k"
+  dataset_size: null # null for full dataset, or specify number for subset
+  shuffle: false
+
+training:
+  # main training parameters
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 2
+  num_generations: 16
+
+  # grpo generation parameters
+  temperature: 0.8
+  top_p: 0.9
+  max_completion_length: 256
+
+  # training configs
+  bf16: true
+  gradient_checkpointing: true
+  scale_rewards: false
+
+  # logging and saving configs
+  logging_steps: 10
+  save_steps: 1000
+  save_total_limit: 2
+  eval_steps: 100
+
+  # vLLM configs
+  use_vllm: true
+  vllm_mode: "colocate" # or "server", but "server" was slow
+  vllm_gpu_memory_utilization: 0.4
+
+reward:
+  format_reward: 0.2
+  correctness_reward: 1.0
+  components: ["format", "correctness"]
+
+distributed:
+  rank: 0
+  world_size: 1
+  local_rank: 0
+  master_addr: "localhost"
+  master_port: "12355"
+
+wandb:
+  enabled: true
+  log_model: "checkpoint"
