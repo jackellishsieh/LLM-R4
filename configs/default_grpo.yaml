@@ -11,11 +11,19 @@ model:
   use_local_files_only: false
 
 data:
-  training_files:
-    - "R3_math/data/gsm8k_original_train.json"
-  dataset_name: "gsm8k"
-  dataset_size: null # null for full dataset, or specify number for subset
-  shuffle: true
+  train:
+    files:
+      - "R3_math/data/gsm8k_original_train.json"
+    dataset_name: "gsm8k"
+    dataset_size: null # null for full dataset, or specify number for subset
+    shuffle: true
+
+  eval:
+    files:
+      - "R3_math/data/gsm8k_original_test.json"
+    dataset_name: "gsm8k"
+    dataset_size: null # null for full dataset, or specify number for subset
+    shuffle: false
 
 training:
   # main training parameters
@@ -45,7 +53,9 @@ training:
   logging_steps: 10
   save_steps: 1000
   save_total_limit: 2
-  eval_steps: 100
+
+  # evaluation configs
+  eval_strategy: "epoch"
 
   # vLLM configs
   use_vllm: true

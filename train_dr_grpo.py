@@ -24,10 +24,10 @@ import yaml
 from datasets import Dataset, concatenate_datasets
 
 from transformers import TrainerCallback
-from trl import GRPOConfig
-from dr_grpo_trainer import DrGRPOTrainer
+from trl import GRPOConfig, GRPOTrainer
 import rl_util
 from config_manager import load_config, parse_override_args, validate_config
+from typing import Literal
 
 TRAINING_FILES = [
     "R3_math/data/gsm8k_original_train.json",
@@ -95,12 +95,12 @@ def create_reward_function(config):
     return reward_function
 
 
-def load_datasets(config):
-    """Load and prepare datasets based on config"""
-    data_config = config["data"]
+def load_datasets(config, split: Literal["train", "eval"]):
+    """Load and prepare train/eval datasets based on config"""
+    data_config = config["data"][split]
     datasets = Dataset.from_list([])
     
-    for file in data_config["training_files"]:
+    for file in data_config["train_files"]:
         with open(file, 'r') as f:
             raw_data = json.load(f)
 
@@ -114,7 +114,12 @@ def load_datasets(config):
     if data_config["dataset_size"] is not None:
         datasets = datasets.select(range(0, data_config["dataset_size"]))
     
+    # set shuffle
+    if data_config["shuffle"]:
+        datasets = datasets.shuffle(seed=config["seed"])
+
     return datasets
+
 
 class DatasetCallback(TrainerCallback):
     def on_epoch_begin(self, args, state, control, **kwargs):
@@ -132,8 +137,11 @@ def create_training_args(config):
         report_to="wandb" if config["wandb"]["enabled"] else None,
         run_name=exp_config["name"],
         logging_steps=train_config["logging_steps"],
+
+        # vllm parameters
         use_vllm=train_config["use_vllm"],
         vllm_mode=train_config["vllm_mode"],
+        vllm_gpu_memory_utilization=config["vllm_gpu_memory_utilization"],
 
         # gen-evaluation parameters
         generation_batch_size=train_config["generation_batch_size"],
@@ -152,11 +160,12 @@ def create_training_args(config):
         top_p=train_config["top_p"],
         max_completion_length=train_config["max_completion_length"],
 
-        # meta
+        # eval
+        eval_strategy=train_config["eval_strategy"],
+
+        # save
         save_steps=train_config["save_steps"],
         save_total_limit=train_config["save_total_limit"],
-        eval_steps=train_config["eval_steps"],
-        # vllm_gpu_memory_utilization=train_config.get("vllm_gpu_memory_utilization"),
     )
 
 
@@ -183,14 +192,16 @@ def train_dr_grpo(config):
 
     # setup components from configs
     reward_function = create_reward_function(config)
-    datasets = load_datasets(config)
+    train_dataset = load_datasets(config, split="train")
+    eval_dataset = load_datasets(config, split="eval")
     training_args = create_training_args(config)
     
-    trainer = DrGRPOTrainer(
+    trainer = GRPOTrainer(
         model=config["model"]["name_or_path"],
         args=training_args,
         reward_funcs=reward_function,
-        train_dataset=datasets,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         callbacks=[DatasetCallback()],
     )
     
