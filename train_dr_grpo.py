@@ -5,16 +5,12 @@ To run without overrides, simply execute the script: python train_dr_grpo.py --c
 
 To run the script in commmand line with overrides, you can do something like this:
 python train_dr_grpo.py \
-    --config configs/default_grpo.yaml \
-    --experiment_name "grpo-experiment-v2" \
-    --dataset_size 5000 \
-    --batch_size 16 \
-    --temperature 0.7
+    --config configs/[NAME].yaml
 
 To create experiment-specific configurations, you can make a copy under a new name using: 
     cp configs/default_grpo.yaml configs/{new_exp_name}.yaml
 Then you can edit the new config file directly before running
-python train_dr_grpo.py --config configs/{new_exp_name}.yaml
+    python train_dr_grpo.py --config configs/{new_exp_name}.yaml
 """
 
 import os
