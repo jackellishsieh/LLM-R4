@@ -102,21 +102,22 @@ def construct_forward_length(
 
     # Split into num_stages equal-length buckets
     bucket_size = len(sorted_data) // num_stages
-    buckets = [
-        sorted_data[stage_size * i : stage_size * (i + 1)] for i in range(num_stages)
-    ]
+    buckets = [sorted_data[bucket_size * i : bucket_size * (i + 1)] for i in range(num_stages)]
 
     # Sample stage_size items from each bucket
     staged_dataset = [random.sample(bucket, stage_size) for bucket in buckets]
 
     # Format the prompts and answer values
     formatted_dataset = [
-        {
-            "prompt": rl_util.r1_zero_question_to_prompt(item["question"]),
-            "answer_value": item["answer_value"],
-            "item_id": item["item_id"],
-        }
-        for stage in staged_dataset for item in stage 
+        [
+            {
+                "prompt": rl_util.r1_zero_question_to_prompt(item["question"]),
+                "answer_value": item["answer_value"],
+                "item_id": item["item_id"],
+            }
+            for item in stage
+        ]
+        for stage in staged_dataset
     ]
 
     return formatted_dataset
