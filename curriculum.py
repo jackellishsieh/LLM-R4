@@ -3,7 +3,7 @@ This file contains curriculum dataset construction utilities for RL training.
 
 python curriculum.py \
     --num_stages 6 \
-    --stage_size 1024 \
+    --stage_size 512 \
     --raw_dataset_path "R3_math/data/gsm8k_original_train.json" \
     --method "forward_length"
 """
@@ -128,7 +128,7 @@ def construct_forward_length_mixed(
     raw_dataset: list[dict], num_stages: int, stage_size: int, seed: int = 42
 ) -> list[list[dict]]:
     """
-    Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries.
+    Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries, with a mixed stage.
     1. Format the questions into prompts
     2. Split into 5 segments by length (# characters) of golden CoT
     3. Randomly sample 1024 from 5 segments
@@ -164,6 +164,47 @@ def construct_forward_length_mixed(
     ]
 
     return formatted_dataset
+
+
+# def construct_forward_advantage(
+#     raw_dataset: list[dict], num_stages: int, stage_size: int, seed: int = 42
+# ) -> list[list[dict]]:
+#     """
+#     Constructs a forward advantage-based dataset from a JSON file containing a list of lists of dictionaries.
+#     1. Format the questions into prompts
+#     2. Split into 6 segments by mean performance from off-policy
+#     3. Randomly sample 1024 from each segment"
+
+#     raw_dataset should have groups of responses for the same entries
+#     """
+#     random.seed(seed)
+
+#     # 
+
+#     # Sort by the length of the golden rationales in characters
+#     sorted_data = sorted(raw_dataset, key=lambda x: len(x["answer_cot"]))
+
+#     # Split into num_stages equal-length buckets
+#     bucket_size = len(sorted_data) // num_stages
+#     buckets = [sorted_data[bucket_size * i : bucket_size * (i + 1)] for i in range(num_stages)]
+
+#     # Sample stage_size items from each bucket
+#     staged_dataset = [random.sample(bucket, stage_size) for bucket in buckets]
+
+#     # Format the prompts and answer values
+#     formatted_dataset = [
+#         [
+#             {
+#                 "prompt": rl_util.r1_zero_question_to_prompt(item["question"]),
+#                 "answer_value": item["answer_value"],
+#                 "item_id": item["item_id"],
+#             }
+#             for item in stage
+#         ]
+#         for stage in staged_dataset
+#     ]
+
+#     return formatted_dataset
 
 
 names_to_methods = {
