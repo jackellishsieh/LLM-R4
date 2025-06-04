@@ -15,15 +15,15 @@ data:
   train:
     files:
       - "R3_math/data/gsm8k_original_train.json"
-    dataset_size: null # null for full dataset, or specify number for subset
+    dataset_size: 100 # null for full dataset, or specify number for subset
     shuffle: true
 
-  # eval:
-  #   files:
-  #     - "R3_math/data/gsm8k_original_test.json"
-  #   dataset_name: "gsm8k"
-  #   dataset_size: null # null for full dataset, or specify number for subset
-  #   shuffle: false
+  eval:
+    files:
+      - "R3_math/data/gsm8k_original_test.json"
+    dataset_name: "gsm8k"
+    dataset_size: 100 # null for full dataset, or specify number for subset
+    shuffle: false
 
 training:
   # main training parameters
@@ -54,7 +54,12 @@ training:
   save_total_limit: 2
 
   # evaluation configs
-  # eval_strategy: "epoch"
+  eval_strategy: "steps"
+  eval_steps: 100
+  per_device_eval_batch_size: 16 # large eval batches since no gradients needed
+  eval_temperature: 0.0 # 0.0 for deterministic eval
+  eval_num_generations: 1 # only one generation per eval step
+
 
   # vLLM configs
   use_vllm: true
