@@ -79,5 +79,5 @@ distributed:
   master_port: "12355"
 
 wandb:
-  enabled: false
+  enabled: true
   log_model: "checkpoint"
