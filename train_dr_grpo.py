@@ -29,7 +29,7 @@ from trl import GRPOConfig, GRPOTrainer
 import rl_util
 from config_manager import load_config, parse_override_args, validate_config
 from typing import Literal
-from curriculum import VanillaDataset
+from curriculum import StagedDataset
 
 # torch specific optimizations
 # Add this after your imports in train_dr_grpo.py
@@ -108,9 +108,6 @@ def load_datasets(config, split: Literal["train", "eval"]):
     """Load and prepare train/eval datasets based on config"""
     data_config = config["data"][split]
     datasets = Dataset.from_list([])
-
-    rl_method = config.get("rl_method", "vanilla")
-    if rl_method == "vanilla":
     
     for file in data_config["files"]:
         with open(file, 'r') as f:
@@ -142,7 +139,11 @@ def load_datasets(config, split: Literal["train", "eval"]):
 class DatasetCallback(TrainerCallback):
     def on_epoch_begin(self, args, state, control, **kwargs):
         # At the start of each epoch, update the train_dataset
-        kwargs["train_dataset"].next_stage()
+        if state.epoch > 0:
+            train_dataloader = kwargs['train_dataloader']
+            if hasattr(train_dataloader.dataset, 'next_stage'):
+                train_dataloader.dataset.next_stage()
+        # kwargs["train_dataset"].next_stage()
         return
 
 def create_training_args(config):
@@ -165,7 +166,6 @@ def create_training_args(config):
 
         # gen-evaluation parameters
         # generation_batch_size=train_config["generation_batch_size"],
-        num_train_epochs=train_config["num_train_epochs"],
         steps_per_generation=train_config["steps_per_generation"],
         gradient_accumulation_steps=train_config["gradient_accumulation_steps"],
         num_generations=train_config["num_generations"],
@@ -175,6 +175,7 @@ def create_training_args(config):
         gradient_checkpointing=train_config["gradient_checkpointing"],
         loss_type=train_config["loss_type"],
         scale_rewards=train_config["scale_rewards"],
+        disable_dropout=train_config.get("disable_dropout", True),
 
         # sampling parameters
         temperature=train_config["temperature"],
@@ -185,8 +186,8 @@ def create_training_args(config):
         eval_strategy=train_config.get("eval_strategy", "epoch"),
         eval_steps=train_config.get("eval_steps", 500),
         per_device_eval_batch_size=train_config.get("per_device_eval_batch_size", 16),
-        eval_num_generations=train_config.get("eval_num_generations", 1),
-        eval_temperature=train_config.get("eval_temperature", 0.0),
+        # eval_num_generations=train_config.get("eval_num_generations", 1),
+        # eval_temperature=train_config.get("eval_temperature", 0.0),
 
         # save
         save_steps=train_config["save_steps"],
@@ -217,22 +218,14 @@ def train_dr_grpo(config):
 
     # setup components from configs
     reward_function = create_reward_function(config)
-    train_dataset = load_datasets(config, split="train")
+    train_dataset = StagedDataset(config["data"]["train"]["files"][0], verbose=True)
+    train_dataset.next_stage()
+    # train_dataset = load_datasets(config, split="train")
     # print(f"sample train dataset items: {train_dataset[0]}")
     # print(f"dataset features: {train_dataset.features}")
     eval_dataset = load_datasets(config, split="eval")
     training_args = create_training_args(config)
 
-    print(f"Train dataset length: {len(train_dataset)}")
-    print(f"Eval dataset length: {len(eval_dataset)}")
-    print(f"Train dataset sample: {train_dataset[0]}")
-    print(f"Train dataset column names: {train_dataset.column_names}")
-    
-    # check if dataset has expected GRPO fields
-    required_fields = ["prompt", "answer_value"]
-    missing_fields = [field for field in required_fields if field not in train_dataset.column_names]
-    if missing_fields:
-        print(f"WARNING: Missing fields: {missing_fields}")
 
     torch.cuda.empty_cache()
     

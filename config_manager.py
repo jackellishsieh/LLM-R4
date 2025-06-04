@@ -50,6 +50,8 @@ def parse_override_args():
     parser.add_argument("--output_dir", type=str, help="Override output directory")
     parser.add_argument("--disable_wandb", action="store_true", help="Disable W&B logging")
     parser.add_argument("--rl_method", type=str, help="Override RL method (vanilla, staged, R3)")
+    parser.add_argument("--disable_dropout", action="store_true", help="Disable dropout for consistent ref probabilities")
+    parser.add_argument("--log_completions", type=str, choices=["rich", "wandb", "none"], help="Log completion pairs to console/wandb")
     
     args = parser.parse_args()
     
@@ -76,7 +78,13 @@ def parse_override_args():
         overrides["wandb"] = {"enabled": False}
     if args.rl_method:
         overrides["rl_method"] = args.rl_method
-    
+    if args.disable_dropout:
+        overrides["training"] = overrides.get("training", {})
+        overrides["training"]["disable_dropout"] = True
+    if args.log_completions:
+        overrides["training"] = overrides.get("training", {})
+        overrides["training"]["log_completions"] = args.log_completions
+        
     return args.config, overrides
 
 def validate_config(config: Dict[str, Any]) -> None:
