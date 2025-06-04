@@ -18,6 +18,7 @@ python train_dr_grpo.py --config configs/{new_exp_name}.yaml
 """
 
 import os
+from curriculum import StagedDataset
 import wandb
 import json
 import yaml
@@ -137,9 +138,8 @@ def load_datasets(config, split: Literal["train", "eval"]):
 class DatasetCallback(TrainerCallback):
     def on_epoch_begin(self, args, state, control, **kwargs):
         # At the start of each epoch, update the train_dataset
-        # kwargs['train_dataset'].step()
+        kwargs["train_dataset"].next_stage()
         return
-
 
 def create_training_args(config):
     """Create GRPOConfig from configuration"""

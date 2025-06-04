@@ -32,8 +32,8 @@ class StagedDataset(Dataset):
             isinstance(stage, list) for stage in self.all_stages
         ), f"{staged_dataset_path} must represent a list of lists"
 
-        # Initialize the active stage
-        self.active_stage = 0
+        # Initialize the active stage to -1. next_stage() must be called before accesisng items.
+        self.active_stage = -1
 
         self.verbose = verbose
         return
