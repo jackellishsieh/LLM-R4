@@ -2,10 +2,10 @@
 This file contains curriculum dataset construction utilities for RL training.
 
 python curriculum.py \
-    --method "vanilla" \
     --num_stages 6 \
     --stage_size 1024 \
-    --raw_dataset_path "R3_math/data/gsm8k_original_train.json"    
+    --raw_dataset_path "R3_math/data/gsm8k_original_train.json" \
+    --method "forward_length"
 """
 
 import json
@@ -79,7 +79,7 @@ def construct_vanilla_dataset(
 ) -> list[list[dict]]:
     """
     Constructs a vanilla dataset from a JSON file containing a list of lists of dictionaries.
-    Each sublist represents a stage in the curriculum.
+    This is formed simply by shuffling the raw dataset, formatting into prompts, and splitting it into `num_stages` stages,
     """
 
     # Shuffle the raw dataset
@@ -103,10 +103,95 @@ def construct_vanilla_dataset(
     return staged_dataset
 
 
+def construct_forward_length(
+    raw_dataset: list[dict], num_stages: int, stage_size: int, seed: int = 42
+) -> list[list[dict]]:
+    """
+    Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries.
+    1. Format the questions into prompts
+    2. Split into 6 "buckets" by ascending length of golden CoT (# characters)
+    3. Randomly sample 1024 from each buckets
+    """
+    random.seed(seed)
+
+    # Sort by the length of the golden rationales in characters
+    sorted_data = sorted(raw_dataset, key=lambda x: len(x["answer_cot"]))
+
+    # Split into num_stages equal-length buckets
+    bucket_size = len(sorted_data) // num_stages
+    buckets = [sorted_data[bucket_size * i : bucket_size * (i + 1)] for i in range(num_stages)]
+
+    # Sample stage_size items from each bucket
+    staged_dataset = [random.sample(bucket, stage_size) for bucket in buckets]
+
+    # Format the prompts and answer values
+    formatted_dataset = [
+        [
+            {
+                "prompt": rl_util.r1_zero_question_to_prompt(item["question"]),
+                "answer_value": item["answer_value"],
+                "item_id": item["item_id"],
+            }
+            for item in stage
+        ]
+        for stage in staged_dataset
+    ]
+
+    return formatted_dataset
+
+def construct_forward_length_mixed(
+    raw_dataset: list[dict], num_stages: int, stage_size: int, seed: int = 42
+) -> list[list[dict]]:
+    """
+    Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries.
+    1. Format the questions into prompts
+    2. Split into 5 segments by length (# characters) of golden CoT
+    3. Randomly sample 1024 from 5 segments
+    4. Randomly sample 1024 across entire dataset for last 1 segment
+    """
+    random.seed(seed)
+
+    # Sort by the length of the golden rationales in characters
+    sorted_data = sorted(raw_dataset, key=lambda x: len(x["answer_cot"]))
+
+    # Split into num_stages - 1 equal-length buckets
+    bucket_size = len(sorted_data) // (num_stages - 1)
+    buckets = [sorted_data[bucket_size * i : bucket_size * (i + 1)] for i in range(num_stages - 1)]
+
+    # Sample stage_size items from each bucket
+    staged_dataset = [random.sample(bucket, stage_size) for bucket in buckets]  # (num_stages - 1, stage_size)
+
+    # Add a final stage sampled from the entire dataset
+    last_stage = random.sample(sorted_data, stage_size)
+    staged_dataset.append(last_stage)
+
+    # Format the prompts and answer values
+    formatted_dataset = [
+        [
+            {
+                "prompt": rl_util.r1_zero_question_to_prompt(item["question"]),
+                "answer_value": item["answer_value"],
+                "item_id": item["item_id"],
+            }
+            for item in stage
+        ]
+        for stage in staged_dataset
+    ]
+
+    return formatted_dataset
+
+
+names_to_methods = {
+    "vanilla": construct_vanilla_dataset,
+    "forward_length": construct_forward_length,
+    "forward_length_mixed": construct_forward_length_mixed,
+}
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Construct a staged dataset from raw data.")
     parser.add_argument("--raw_dataset_path", type=str, required=True, help="Path to the raw dataset JSON file.")
-    parser.add_argument("--method", type=str, choices=["vanilla"], help="Method to construct the dataset.")
+    parser.add_argument("--method", type=str, choices=names_to_methods.keys(), help="Method to construct the dataset.")
     parser.add_argument("--num_stages", type=int, default=3, help="Number of stages in the curriculum.")
     parser.add_argument("--stage_size", type=int, default=1, help="Number of items in each stage.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
@@ -122,11 +207,9 @@ if __name__ == "__main__":
         raw_dataset = json.load(file)
     print("Raw dataset loaded from", args.raw_dataset_path)
 
-    if args.method == "vanilla":
-        staged_dataset = construct_vanilla_dataset(
-            raw_dataset, num_stages=args.num_stages, stage_size=args.stage_size, seed=args.seed
-        )
-
+    # Get the appropriate method for constructing the staged dataset
+    method = names_to_methods.get(args.method)
+    staged_dataset = method(raw_dataset, num_stages=args.num_stages, stage_size=args.stage_size, seed=args.seed)
     print(
         f"Constructed staged dataset using {args.method} method, with {args.num_stages} stages, each containing {args.stage_size} items."
     )
