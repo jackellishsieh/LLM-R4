@@ -16,7 +16,7 @@ data:
   dataset_name: "gsm8k"
   train:
     files:
-      - "R3_math/data/gsm8k_original_train.json"
+      - "curricula/vanilla_staged_dataset.json"
     dataset_size: null # null for full dataset, or specify number for subset
     shuffle: true
 
@@ -24,7 +24,7 @@ data:
     files:
       - "R3_math/data/gsm8k_original_test.json"
     dataset_name: "gsm8k"
-    dataset_size: null # null for full dataset, or specify number for subset
+    dataset_size: 100 # null for full dataset, or specify number for subset
     shuffle: false
 
 training:
@@ -36,7 +36,7 @@ training:
   # generation_batch_size: 16 # how many samples to generate at once
   steps_per_generation: 16 # number of steps to take before generating new data
   gradient_accumulation_steps: 1 # 2
-  num_generations: 8
+  num_generations: 4 # 8
 
   # generation parameters
   temperature: 0.8

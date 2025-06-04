@@ -42,15 +42,30 @@ class StagedDataset(Dataset):
         # Return the length of the current active stage
         return len(self.all_stages[self.active_stage]) if self.active_stage < len(self.all_stages) else 0
 
+    def __getitems__(self, indices):
+        """Handle batch indexing properly for datasets.Dataset compatibility"""
+        if isinstance(indices, list):
+            return [self.__getitem__(idx) for idx in indices]
+        else:
+            return self.__getitem__(indices)
+
     def __getitem__(self, idx: int):
         # Ensure the active stage is valid
         assert self.active_stage < len(self.all_stages), f"Exhausted all {len(self.all_stages)} stages."
-        assert (
-            0 <= idx < len(self.all_stages[self.active_stage])
-        ), f"Index {idx} out of bounds for the current active stage (length {len(self.all_stages[self.active_stage])})."
+        # assert (
+        #     0 <= idx < len(self.all_stages[self.active_stage])
+        # ), f"Index {idx} out of bounds for the current active stage (length {len(self.all_stages[self.active_stage])})."
 
         # Return the item from the current active stage
-        return self.all_stages[self.active_stage][idx]
+        # print("idx", idx)
+        if isinstance(idx, int):
+            return self.all_stages[self.active_stage][idx]
+        elif isinstance(idx, list):
+            return [self.all_stages[self.active_stage][i] for i in idx]
+        elif isinstance(idx, slice):
+            return self.all_stages[self.active_stage][idx.start:idx.stop:idx.step]
+        else:
+            raise TypeError(f"Unsupported index type: {type(idx)}")
 
     def next_stage(self):
         if self.verbose:
