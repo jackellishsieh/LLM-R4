@@ -29,6 +29,13 @@ import rl_util
 from config_manager import load_config, parse_override_args, validate_config
 from typing import Literal
 
+# torch specific optimizations
+# Add this after your imports in train_dr_grpo.py
+import torch
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+
+
 TRAINING_FILES = [
     "R3_math/data/gsm8k_original_train.json",
 ]
@@ -109,6 +116,8 @@ def load_datasets(config, split: Literal["train", "eval"]):
             item.pop("answer_cot", None)
         
         datasets = concatenate_datasets([datasets, Dataset.from_list(raw_data)])
+    
+    print(f"Raw dataset size before processing: {len(datasets)}")
 
     # set shuffle
     if data_config["shuffle"]:
@@ -116,7 +125,11 @@ def load_datasets(config, split: Literal["train", "eval"]):
 
     # apply dataset size limit if specified
     if data_config["dataset_size"] is not None:
-        datasets = datasets.select(range(0, data_config["dataset_size"]))    
+        print(data_config["dataset_size"])
+        datasets = datasets.select(range(0, data_config["dataset_size"]))
+        print(f"Dataset size after processing: {len(datasets)}")
+        # print("Dataset Items:", datasets)
+
 
     return datasets
 
@@ -138,6 +151,8 @@ def create_training_args(config):
         report_to="wandb" if config["wandb"]["enabled"] else None,
         run_name=exp_config["name"],
         logging_steps=train_config["logging_steps"],
+        num_train_epochs=train_config["num_train_epochs"],
+        per_device_train_batch_size=train_config["per_device_train_batch_size"],
 
         # vllm parameters
         use_vllm=train_config["use_vllm"],
@@ -163,7 +178,11 @@ def create_training_args(config):
         max_completion_length=train_config["max_completion_length"],
 
         # eval
-        eval_strategy=train_config["eval_strategy"],
+        eval_strategy=train_config.get("eval_strategy", "epoch"),
+        eval_steps=train_config.get("eval_steps", 500),
+        per_device_eval_batch_size=train_config.get("per_device_eval_batch_size", 16),
+        eval_num_generations=train_config.get("eval_num_generations", 1),
+        eval_temperature=train_config.get("eval_temperature", 0.0),
 
         # save
         save_steps=train_config["save_steps"],
@@ -195,8 +214,23 @@ def train_dr_grpo(config):
     # setup components from configs
     reward_function = create_reward_function(config)
     train_dataset = load_datasets(config, split="train")
+    # print(f"sample train dataset items: {train_dataset[0]}")
+    # print(f"dataset features: {train_dataset.features}")
     eval_dataset = load_datasets(config, split="eval")
     training_args = create_training_args(config)
+
+    print(f"Train dataset length: {len(train_dataset)}")
+    print(f"Eval dataset length: {len(eval_dataset)}")
+    print(f"Train dataset sample: {train_dataset[0]}")
+    print(f"Train dataset column names: {train_dataset.column_names}")
+    
+    # check if dataset has expected GRPO fields
+    required_fields = ["prompt", "answer_value"]
+    missing_fields = [field for field in required_fields if field not in train_dataset.column_names]
+    if missing_fields:
+        print(f"WARNING: Missing fields: {missing_fields}")
+
+    torch.cuda.empty_cache()
     
     trainer = GRPOTrainer(
         model=config["model"]["name_or_path"],
