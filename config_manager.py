@@ -49,6 +49,7 @@ def parse_override_args():
     parser.add_argument("--temperature", type=float, help="Override temperature")
     parser.add_argument("--output_dir", type=str, help="Override output directory")
     parser.add_argument("--disable_wandb", action="store_true", help="Disable W&B logging")
+    parser.add_argument("--rl_method", type=str, help="Override RL method (vanilla, staged, R3)")
     
     args = parser.parse_args()
     
@@ -73,6 +74,8 @@ def parse_override_args():
         overrides["experiment"]["output_dir"] = args.output_dir
     if args.disable_wandb:
         overrides["wandb"] = {"enabled": False}
+    if args.rl_method:
+        overrides["rl_method"] = args.rl_method
     
     return args.config, overrides
 

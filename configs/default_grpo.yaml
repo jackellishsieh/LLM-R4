@@ -6,6 +6,8 @@ experiment:
   output_dir: "dr_grpo_qwen_0.5b"
   seed: 42
 
+rl_method: "vanilla"
+
 model:
   name_or_path: "dillonkn/qwen2.5-0.5b-reasoning-sft"
   use_local_files_only: false
@@ -47,6 +49,7 @@ training:
   loss_type: "dr_grpo"
   scale_rewards: false          # dr. grpo does not scale rewards by std
   reward_weights: null
+  disable_dropout: true
 
   # logging and saving configs
   logging_steps: 150
@@ -54,8 +57,8 @@ training:
   save_total_limit: 2
 
   # evaluation configs
-  eval_strategy: "steps"
-  eval_steps: 1000
+  eval_strategy: "epoch"
+  # eval_steps: 1000
   per_device_eval_batch_size: 16 # large eval batches since no gradients needed
   eval_temperature: 0.0 # 0.0 for deterministic eval
   eval_num_generations: 1 # only one generation per eval step

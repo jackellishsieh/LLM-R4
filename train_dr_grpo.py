@@ -29,6 +29,7 @@ from trl import GRPOConfig, GRPOTrainer
 import rl_util
 from config_manager import load_config, parse_override_args, validate_config
 from typing import Literal
+from curriculum import VanillaDataset
 
 # torch specific optimizations
 # Add this after your imports in train_dr_grpo.py
@@ -107,6 +108,9 @@ def load_datasets(config, split: Literal["train", "eval"]):
     """Load and prepare train/eval datasets based on config"""
     data_config = config["data"][split]
     datasets = Dataset.from_list([])
+
+    rl_method = config.get("rl_method", "vanilla")
+    if rl_method == "vanilla":
     
     for file in data_config["files"]:
         with open(file, 'r') as f:
