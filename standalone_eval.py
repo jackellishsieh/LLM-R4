@@ -63,6 +63,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="The temperature to use for sampling. "
+    )
+
+    parser.add_argument(
         "--seed",
         type=int,
         default=42,
@@ -132,8 +139,7 @@ def get_eval_outputs(args) -> list[generation.EvalExample]:
 
     # Initialize the sampling parameters
     eval_sampling_params = generation.init_sampling_params(
-        temperature=0.0,
-        top_k=0,
+        temperature=args.temperature,
         top_p=1.0,
         max_tokens=args.max_gen_length,
         seed=args.seed,
