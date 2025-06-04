@@ -87,15 +87,15 @@ def create_reward_function(config):
             
             total_rewards.append(reward)
         
-        # # wandb logging
-        # if config["wandb"]["enabled"]:
-        #     wandb.log({
-        #         "reward/mean_reward": sum(total_rewards) / len(total_rewards),
-        #         "reward/format_compliance_rate": format_count / len(total_rewards),
-        #         "reward/correctness_rate": correctness_count / len(total_rewards),
-        #         "reward/max_reward": max(total_rewards),
-        #         "reward/min_reward": min(total_rewards),
-        #     })
+        # wandb logging
+        if config["wandb"]["enabled"]:
+            wandb.log({
+                "reward/mean_reward": sum(total_rewards) / len(total_rewards),
+                "reward/format_compliance_rate": format_count / len(total_rewards),
+                "reward/correctness_rate": correctness_count / len(total_rewards),
+                "reward/max_reward": max(total_rewards),
+                "reward/min_reward": min(total_rewards),
+            })
 
         return total_rewards
     
@@ -122,6 +122,14 @@ def load_datasets(config, split: Literal["train", "eval"]):
     # set shuffle
     if data_config["shuffle"]:
         datasets = datasets.shuffle(seed=config["experiment"]["seed"])
+
+    # # for training, implement epoch sampling
+    # if split == "train":
+    #     train_config = config["training"]
+    #     max_samples = train_config.get("max_samples_per_epoch")
+    #     if max_samples and len(datasets) > max_samples:
+    #         print(f"Will sample {max_samples} examples per epoch from {len(datasets)} total")
+    #         datasets.max_samples_per_epoch = max_samples
 
     # apply dataset size limit if specified
     if data_config["dataset_size"] is not None:
@@ -181,8 +189,8 @@ def create_training_args(config):
         eval_strategy=train_config.get("eval_strategy", "epoch"),
         eval_steps=train_config.get("eval_steps", 500),
         per_device_eval_batch_size=train_config.get("per_device_eval_batch_size", 16),
-        eval_num_generations=train_config.get("eval_num_generations", 1),
-        eval_temperature=train_config.get("eval_temperature", 0.0),
+        # eval_num_generations=train_config.get("eval_num_generations", 1),
+        # eval_temperature=train_config.get("eval_temperature", 0.0),
 
         # save
         save_steps=train_config["save_steps"],
@@ -206,7 +214,7 @@ def train_dr_grpo(config):
             config=config  # log configs to wandb
         )
 
-    # os.environ["WANDB_LOG_MODEL"] = "checkpoint"  # log model checkpoints
+    os.environ["WANDB_LOG_MODEL"] = "checkpoint"  # log model checkpoints
 
     # setup cot info
     rl_util.cot_info = rl_util.prepare_cot_info(config["data"]["dataset_name"])

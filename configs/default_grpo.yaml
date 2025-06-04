@@ -22,13 +22,14 @@ data:
     files:
       - "R3_math/data/gsm8k_original_test.json"
     dataset_name: "gsm8k"
-    dataset_size: null # null for full dataset, or specify number for subset
+    dataset_size: 25 # null for full dataset, or specify number for subset
     shuffle: false
 
 training:
   # main training parameters
   per_device_train_batch_size: 8 # 4
   num_train_epochs: 6
+  max_samples_per_epoch: 1024
 
   # gen-evaluation parameters
   # generation_batch_size: 16 # how many samples to generate at once
@@ -56,9 +57,9 @@ training:
   # evaluation configs
   eval_strategy: "steps"
   eval_steps: 1000
-  per_device_eval_batch_size: 16 # large eval batches since no gradients needed
-  eval_temperature: 0.0 # 0.0 for deterministic eval
-  eval_num_generations: 1 # only one generation per eval step
+  per_device_eval_batch_size: 32 # large eval batches since no gradients needed
+  # eval_temperature: 0.0 # 0.0 for deterministic eval
+  # eval_num_generations: 1 # only one generation per eval step
 
 
   # vLLM configs
@@ -79,5 +80,5 @@ distributed:
   master_port: "12355"
 
 wandb:
-  enabled: false
+  enabled: true
   log_model: "checkpoint"
