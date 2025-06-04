@@ -109,14 +109,14 @@ def load_datasets(config, split: Literal["train", "eval"]):
             item.pop("answer_cot", None)
         
         datasets = concatenate_datasets([datasets, Dataset.from_list(raw_data)])
-    
-    # apply dataset size limit if specified
-    if data_config["dataset_size"] is not None:
-        datasets = datasets.select(range(0, data_config["dataset_size"]))
-    
+
     # set shuffle
     if data_config["shuffle"]:
         datasets = datasets.shuffle(seed=config["experiment"]["seed"])
+
+    # apply dataset size limit if specified
+    if data_config["dataset_size"] is not None:
+        datasets = datasets.select(range(0, data_config["dataset_size"]))    
 
     return datasets
 
@@ -146,6 +146,7 @@ def create_training_args(config):
 
         # gen-evaluation parameters
         # generation_batch_size=train_config["generation_batch_size"],
+        num_train_epochs=train_config["num_train_epochs"],
         steps_per_generation=train_config["steps_per_generation"],
         gradient_accumulation_steps=train_config["gradient_accumulation_steps"],
         num_generations=train_config["num_generations"],
