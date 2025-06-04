@@ -91,12 +91,15 @@ def create_reward_function(config):
         
         # wandb logging
         if config["wandb"]["enabled"]:
+            is_eval = kwargs.get('is_eval', False) or 'eval' in str(kwargs.get('dataloader', ''))
+            prefix = "eval" if is_eval else "train"
+            
             wandb.log({
-                "reward/mean_reward": sum(total_rewards) / len(total_rewards),
-                "reward/format_compliance_rate": format_count / len(total_rewards),
-                "reward/correctness_rate": correctness_count / len(total_rewards),
-                "reward/max_reward": max(total_rewards),
-                "reward/min_reward": min(total_rewards),
+                f"{prefix}/mean_reward": sum(total_rewards) / len(total_rewards),
+                f"{prefix}/format_compliance_rate": format_count / len(total_rewards),
+                f"{prefix}/correctness_rate": correctness_count / len(total_rewards),
+                f"{prefix}/max_reward": max(total_rewards),
+                f"{prefix}/min_reward": min(total_rewards),
             })
 
         return total_rewards
