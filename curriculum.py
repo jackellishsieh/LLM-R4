@@ -94,12 +94,20 @@ def construct_forward_length(
     """
     Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries.
     1. Format the questions into prompts
-    2. Sort in increasing order of golden rationale length
-    3. Take the first (6*1024) of these in order"
+    2. Split into 6 "buckets" by ascending length (# characters)
+    3. Randomly sample 1024 from each buckets
     """
+    # Sort by the length of the golden rationales in characters
+    sorted_data = sorted(raw_dataset, key=lambda x: len(x["answer_cot"]))
 
-    # Sort the list by the length of the golden rationale in characters
-    raw_dataset.sort(key=lambda item: len(item["answer_cot"]))
+    # Split into num_stages equal-length buckets
+    bucket_size = len(sorted_data) // num_stages
+    buckets = [
+        sorted_data[stage_size * i : stage_size * (i + 1)] for i in range(num_stages)
+    ]
+
+    # Sample stage_size items from each bucket
+    staged_dataset = [random.sample(bucket, stage_size) for bucket in buckets]
 
     # Format the prompts and answer values
     formatted_dataset = [
@@ -108,15 +116,10 @@ def construct_forward_length(
             "answer_value": item["answer_value"],
             "item_id": item["item_id"],
         }
-        for item in raw_dataset
+        for stage in staged_dataset for item in stage 
     ]
 
-    # Take and split the dataset into `num_stages` stages, each containing `stage_size` items
-    # Only contains the LAST num_stages * stage_size items
-    formatted_dataset = formatted_dataset[-num_stages * stage_size :]
-    staged_dataset = [formatted_dataset[stage_size * i : stage_size * (i + 1)] for i in range(0, num_stages)]
-
-    return staged_dataset
+    return formatted_dataset
 
 
 names_to_methods = {
