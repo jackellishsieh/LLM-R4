@@ -31,9 +31,9 @@ def staged_data(data, M):
     """
     data_by_stage = [[] for i in range(M)]
     for example in data:
-        if "answer" not in example:
+        if "answer_value" not in example:
             raise RuntimeError("Dataset has no 'answer' field.")
-        cot = example["answer"]
+        cot = example["answer_value"]
         staged_partial, staged_remaining = [], [] 
         steps = [step for step in cot.split('\n') if step.strip()]
         no_steps = len(steps)
@@ -54,7 +54,7 @@ def staged_data(data, M):
         for stage in range(M): 
             staged_example = example.copy()
             staged_example["partial_rationale"] = staged_partial[stage]
-            staged_example["answer"] = answer_val
+            staged_example["answer_value"] = answer_val
             staged_example["stage"] = M - stage 
             data_by_stage[M - stage - 1].append(staged_example)
         
