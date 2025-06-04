@@ -6,6 +6,8 @@ import random
 from datasets import Dataset
 from abc import ABC, abstractmethod
 
+import rl_util
+
 class CurriculumDataset(ABC, Dataset):
     """
     Base class for selection-based curriculum datasets.
@@ -19,7 +21,7 @@ class CurriculumDataset(ABC, Dataset):
             initial_data = json.load(file)
 
         # Process the list of dictionaries as appropriate
-        self._all_data = self.process_json(initial_data)
+        self._all_data = self.process_raw_data(initial_data)
         self.active_indices = None
         self.dataset_size = dataset_size
         return
@@ -37,7 +39,7 @@ class CurriculumDataset(ABC, Dataset):
         return example_dict
 
     @abstractmethod
-    def process_json(self, initial_data: list[dict]) -> list[dict]:
+    def process_raw_data(self, initial_data: list[dict]) -> list[dict]:
         """
         Process the JSON file and return a list of dictionaries.
         This method should be implemented by subclasses to define how the JSON data is processed.
@@ -66,9 +68,10 @@ class VanillaDataset(CurriculumDataset):
 
         return
 
-    def process_json(self, initial_data: list[dict]) -> list[dict]:
-        # Does no extra processing, just returns the data as is
-        return initial_data
+    def process_raw_data(self, initial_data: list[dict]) -> list[dict]:
+        # Uses the deepseek prompt
+        processed_data = [rl_util.r1_zero_question_to_prompt(item["question"]) for item in initial_data if "question" in item]
+        return processed_data
 
     def step(self):
         assert len(self.remaining_indices) < self.dataset_size, "Not enough remaining indices to sample a batch."
