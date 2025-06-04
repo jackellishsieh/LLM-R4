@@ -85,15 +85,15 @@ def create_reward_function(config):
             
             total_rewards.append(reward)
         
-        # # wandb logging
-        # if config["wandb"]["enabled"]:
-        #     wandb.log({
-        #         "reward/mean_reward": sum(total_rewards) / len(total_rewards),
-        #         "reward/format_compliance_rate": format_count / len(total_rewards),
-        #         "reward/correctness_rate": correctness_count / len(total_rewards),
-        #         "reward/max_reward": max(total_rewards),
-        #         "reward/min_reward": min(total_rewards),
-        #     })
+        # wandb logging
+        if config["wandb"]["enabled"]:
+            wandb.log({
+                "reward/mean_reward": sum(total_rewards) / len(total_rewards),
+                "reward/format_compliance_rate": format_count / len(total_rewards),
+                "reward/correctness_rate": correctness_count / len(total_rewards),
+                "reward/max_reward": max(total_rewards),
+                "reward/min_reward": min(total_rewards),
+            })
 
         return total_rewards
     
@@ -207,7 +207,7 @@ def train_dr_grpo(config):
             config=config  # log configs to wandb
         )
 
-    # os.environ["WANDB_LOG_MODEL"] = "checkpoint"  # log model checkpoints
+    os.environ["WANDB_LOG_MODEL"] = "checkpoint"  # log model checkpoints
 
     # setup cot info
     rl_util.cot_info = rl_util.prepare_cot_info(config["data"]["dataset_name"])
