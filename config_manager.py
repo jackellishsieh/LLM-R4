@@ -59,7 +59,7 @@ def parse_override_args():
     if args.model_path:
         overrides["model"] = {"name_or_path": args.model_path}
     if args.dataset_size:
-        overrides["data"] = {"dataset_size": args.dataset_size}
+        overrides["data"] = {"train": {"dataset_size": args.dataset_size}}
     if args.batch_size:
         overrides["training"] = {"per_device_train_batch_size": args.batch_size}
     if args.num_generations:
