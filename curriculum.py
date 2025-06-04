@@ -94,9 +94,11 @@ def construct_forward_length(
     """
     Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries.
     1. Format the questions into prompts
-    2. Split into 6 "buckets" by ascending length (# characters)
+    2. Split into 6 "buckets" by ascending length of golden CoT (# characters)
     3. Randomly sample 1024 from each buckets
     """
+    random.seed(seed)
+
     # Sort by the length of the golden rationales in characters
     sorted_data = sorted(raw_dataset, key=lambda x: len(x["answer_cot"]))
 
@@ -122,10 +124,52 @@ def construct_forward_length(
 
     return formatted_dataset
 
+def construct_forward_length_mixed(
+    raw_dataset: list[dict], num_stages: int, stage_size: int, seed: int = 42
+) -> list[list[dict]]:
+    """
+    Constructs a forward length-based dataset from a JSON file containing a list of lists of dictionaries.
+    1. Format the questions into prompts
+    2. Split into 5 segments by length (# characters) of golden CoT
+    3. Randomly sample 1024 from 5 segments
+    4. Randomly sample 1024 across entire dataset for last 1 segment
+    """
+    random.seed(seed)
+
+    # Sort by the length of the golden rationales in characters
+    sorted_data = sorted(raw_dataset, key=lambda x: len(x["answer_cot"]))
+
+    # Split into num_stages - 1 equal-length buckets
+    bucket_size = len(sorted_data) // (num_stages - 1)
+    buckets = [sorted_data[bucket_size * i : bucket_size * (i + 1)] for i in range(num_stages - 1)]
+
+    # Sample stage_size items from each bucket
+    staged_dataset = [random.sample(bucket, stage_size) for bucket in buckets]  # (num_stages - 1, stage_size)
+
+    # Add a final stage sampled from the entire dataset
+    last_stage = random.sample(sorted_data, stage_size)
+    staged_dataset.append(last_stage)
+
+    # Format the prompts and answer values
+    formatted_dataset = [
+        [
+            {
+                "prompt": rl_util.r1_zero_question_to_prompt(item["question"]),
+                "answer_value": item["answer_value"],
+                "item_id": item["item_id"],
+            }
+            for item in stage
+        ]
+        for stage in staged_dataset
+    ]
+
+    return formatted_dataset
+
 
 names_to_methods = {
     "vanilla": construct_vanilla_dataset,
     "forward_length": construct_forward_length,
+    "forward_length_mixed": construct_forward_length_mixed,
 }
 
 
